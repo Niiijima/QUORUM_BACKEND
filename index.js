@@ -9,11 +9,11 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 
-const uri = process.env.MONGO_URI;
+const url = process.env.MONGO_URL;
 
 // Connect MongoDB Atlas
 mongoose
-    .connect(uri)
+    .connect(url)
     .then(() => console.log(" Mongodb Connected Successfully"))
     .catch((err) => console.log(" Connection error: ", err));
 
