@@ -30,7 +30,7 @@ const upload = require('./config/multer');
 app.post("/api/test-upload", (req, res) => {
     upload.single("image")(req, res, function (err) {
         if (err) {
-            console.error("❌ MULTER-CLOUDINARY PIPELINE CRASH:", err);
+            console.error("MULTER-CLOUDINARY PIPELINE CRASH:", err);
             return res.status(500).json({ 
                 message: "Pipeline Error encountered", 
                 errorDetails: err.message || err.toString() 

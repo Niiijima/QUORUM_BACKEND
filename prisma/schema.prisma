@@ -7,10 +7,132 @@ datasource db {
   url      = env("MONGO_URL")
 }
 
+
+enum CampaignStatus {
+  DRAFT
+  PUBLISHED
+  ACTIVE
+  PAUSED
+  CLOSED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+
 model User {
-  id        String   @id @map("_id") @db.ObjectId
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  email        String        @unique
+  password     String
+  role         String        @default("VOTER")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  wallet       Wallet?
+  votes        Vote[]
+  transactions Transaction[]
+  payments     Payment[]
+  auditLogs    AuditLog[]
+}
+
+model Wallet {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  balance      Int           @default(0)
+  userId       String        @unique @map("user_id") @db.ObjectId
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+}
+
+model Transaction {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  type        String
+  amount      Int
+  description String?
+  userId      String   @map("user_id") @db.ObjectId
+  walletId    String   @map("wallet_id") @db.ObjectId
+  createdAt   DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id])
+  wallet Wallet @relation(fields: [walletId], references: [id])
+}
+
+model Vote {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @map("user_id") @db.ObjectId
+  nomineeId  String   @map("nominee_id") @db.ObjectId
+  coinsUsed  Int      @default(1)
+  campaignId String?  @map("campaign_id") @db.ObjectId
+  createdAt  DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  nominee Nominee @relation(fields: [nomineeId], references: [id])
+}
+
+model Payment {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String        @db.ObjectId
+  amount          Int
+  coinsToCredit   Int
+  status          PaymentStatus @default(PENDING)
+  paystackRef     String        @unique
+  paystackPayload Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Campaign {
+  id          String         @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  status      CampaignStatus @default(DRAFT)
+  startDate   DateTime?
+  endDate     DateTime?
+  coinPerVote Int            @default(1)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  categories Category[]
+}
+
+model Category {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  campaignId String   @db.ObjectId
+  name       String
+  createdAt  DateTime @default(now())
+
+  campaign Campaign  @relation(fields: [campaignId], references: [id])
+  nominees Nominee[]
+}
+
+model Nominee {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  categoryId String   @db.ObjectId
+  name       String
+  bio        String?
+  imageUrl   String?
+  createdAt  DateTime @default(now())
+
+  category Category @relation(fields: [categoryId], references: [id])
+  votes    Vote[]
+}
+
+model AuditLog {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String?  @db.ObjectId
+  eventType   String
+  ipAddress   String?
+  metadata    Json?
+  relatedTxId String?
+  createdAt   DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
 }
