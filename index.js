@@ -1,20 +1,25 @@
+require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 
-require('dotenv').config();
+
 const dns = require('node:dns');
 dns.setServers(['8.8.8.8', '8.8.4.4']);  
-
+const helmet = require('helmet');
+const morgan = require('morgan');
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 
 const url = process.env.MONGO_URL;
 
+// Multer middleware & temporary test route
+const upload = require('./config/multer');
+
 // Connect MongoDB Atlas
 mongoose
     .connect(url)
-    .then(() => console.log(" Mongodb Connected Successfully"))
+    .then(() => console.log(" MongoDB Connected Successfully"))
     .catch((err) => console.log(" Connection error: ", err));
 
 // Connect Cloudinary
@@ -23,10 +28,12 @@ require('./config/cloudinary');
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(helmet());
+app.use(morgan('dev'));
 
 
-// Multer middleware & temporary test route
-const upload = require('./config/multer');
+
+
 app.post("/api/test-upload", (req, res) => {
     upload.single("image")(req, res, function (err) {
         if (err) {
