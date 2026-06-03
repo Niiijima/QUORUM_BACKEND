@@ -5,7 +5,7 @@ const cloudinary = require('./cloudinary');
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
-        folder: 'Quorum_profiles', // Organized folder for profile photos
+        folder: 'Quorum_profiles', 
         allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
     },
 });
