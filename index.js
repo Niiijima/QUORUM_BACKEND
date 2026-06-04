@@ -1,56 +1,49 @@
-const fs = require('fs');
-const path = require('path');
-
-require('dotenv').config();
-const dns = require('node:dns');
-dns.setServers(['8.8.8.8', '8.8.4.4']);  
-
 const express = require('express');
 const cors = require('cors');
-const mongoose = require('mongoose');
+require('dotenv').config();
 
-const url = process.env.MONGO_URL;
-
-// Connect MongoDB Atlas
-mongoose
-    .connect(url)
-    .then(() => console.log(" Mongodb Connected Successfully"))
-    .catch((err) => console.log(" Connection error: ", err));
-
-// Connect Cloudinary
-require('./config/cloudinary');
+const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/user');
 
 const app = express();
+const PORT = process.env.PORT || 1000;
+
+// 2. MIDDLEWARE
 app.use(cors());
 app.use(express.json());
 
+// 3. MOUNT ROUTES
+app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes); // Mounting user routes
 
-// Multer middleware & temporary test route
+// Test Upload Route 
 const upload = require('./config/multer');
 app.post("/api/test-upload", (req, res) => {
     upload.single("image")(req, res, function (err) {
-        if (err) {
-            console.error("❌ MULTER-CLOUDINARY PIPELINE CRASH:", err);
-            return res.status(500).json({ 
-                message: "Pipeline Error encountered", 
-                errorDetails: err.message || err.toString() 
-            });
-        }
-        if (!req.file) {
-            return res.status(400).json({ message: "No file uploaded!" });
-        }
-        res.status(200).json({
-            message: " Upload successful!",
-            imageUrl: req.file.path 
-        });
+        if (err) return res.status(500).json({ error: err.message });
+        if (!req.file) return res.status(400).json({ message: "No file" });
+        res.status(200).json({ imageUrl: req.file.path });
     });
 });
 
+// Health Check Route
 app.get("/", (req, res) => {
-    res.send("Hello world");
+    res.json({ 
+        message: "Quorum Backend is running 🚀",
+        status: "OK"
+    });
 });
 
-const port = process.env.PORT || 2000;
-app.listen(port, () => {
-    console.log(`quorum server is running on port ${port}`);
+// 404 Handler
+app.use((req, res) => {
+    res.status(404).json({ message: "Route not found" });
 });
+
+// Start Server
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`✅ Quorum server is running on http://localhost:${PORT}`);
+    });
+}
+
+module.exports = app;

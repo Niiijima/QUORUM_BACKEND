@@ -7,10 +7,51 @@ datasource db {
   url      = env("MONGO_URL")
 }
 
+// USER MODEL 
 model User {
-  id        String   @id @map("_id") @db.ObjectId
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
   email     String   @unique
-  name      String?
+  password  String
+  role      String   @default("VOTER")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  wallet    Wallet?
+  votes     Vote[]
+  transactions Transaction[]  
+}
+
+// WALLET MODEL 
+model Wallet {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  balance   Int      @default(0)
+  userId    String   @unique @map("user_id") @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  transactions Transaction[]
+}
+
+// TRANSACTION MODEL 
+model Transaction {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  type      String
+  amount    Int
+  description String?
+  userId    String   @map("user_id") @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  walletId  String   @map("wallet_id") @db.ObjectId
+  wallet    Wallet   @relation(fields: [walletId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+// VOTE MODEL 
+model Vote {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @map("user_id") @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  nomineeId String   @map("nominee_id") @db.ObjectId
+  coinsUsed Int      @default(1)
+  campaignId String? @map("campaign_id") @db.ObjectId
+  createdAt DateTime @default(now())
 }
