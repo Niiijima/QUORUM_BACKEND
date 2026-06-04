@@ -11,6 +11,10 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 
+const userRoutes = require('./routes/userRoutes');
+const campaignRoutes = require('./routes/campaignRoutes');
+const voteRoutes = require('./routes/voteRoutes');  
+
 const url = process.env.MONGO_URL;
 
 // Multer middleware & temporary test route
@@ -31,7 +35,32 @@ app.use(express.json());
 app.use(helmet());
 app.use(morgan('dev'));
 
+app.use('/api/users', userRoutes);
+app.use('/api/campaigns', campaignRoutes);
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Quorum Backend API Documentation',
+      version: '1.0.0',
+      description: 'API Documentation for the Quorum full-stack architecture application',
+    },
+    servers: [
+      {
+        url: 'http://localhost:2000',
+        description: 'Local Development Server',
+      },
+    ],
+  },
+  
+  apis: ['./index.js', './src/routes/*.js'], 
+};
+
+const swaggerDocs = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 
 app.post("/api/test-upload", (req, res) => {
