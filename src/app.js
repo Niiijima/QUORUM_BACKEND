@@ -7,6 +7,7 @@ const errorHandler = require('./middleware/error')
 const { defaultLimiter } = require('./middleware/rateLimit')
 const { requestLogger } = require('./config/logger')
 const campaignRoutes = require('./modules/campaigns/campaigns.routes')
+const adminRoutes = require('./modules/admin/admin.routes')
 
 const app = express()
 
@@ -23,6 +24,7 @@ app.get('/health', (req, res) => {
 })
 
 app.use('/api/campaigns', campaignRoutes)
+app.use('/api/admin', adminRoutes)
 
 app.use((req, res) => {
   res.status(404).json({ success: false, message: 'Route not found' })

@@ -17,7 +17,8 @@ const authMiddleware = (req, res, next) => {
         req.user = decoded;  
         next();
     } catch (error) {
-        return res.status(403).json({ 
+         console.log('JWT verify error:', error.message)
+        return res.status(401).json({ 
             success: false,
             message: "Invalid or expired token." 
         });
@@ -25,7 +26,7 @@ const authMiddleware = (req, res, next) => {
 };
 
 // Role-based authorization
-const authorize = (roles = []) => {
+const authorize = (...roles) => {
     return (req, res, next) => {
         if (!req.user) {
             return res.status(401).json({ 
@@ -33,6 +34,10 @@ const authorize = (roles = []) => {
                 message: "Authentication required" 
             });
         }
+
+        console.log('Decoded user:', req.user)
+console.log('User role:', req.user.role)
+console.log('Allowed roles:', roles)
 
         if (roles.length > 0 && !roles.includes(req.user.role)) {
             return res.status(403).json({ 

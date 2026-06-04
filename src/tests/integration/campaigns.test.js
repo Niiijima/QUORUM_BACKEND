@@ -1,3 +1,4 @@
+require('dotenv').config() 
 const supertest = require('supertest')
 const jwt = require('jsonwebtoken')
 const app = require('../../app')
@@ -7,15 +8,16 @@ const request = supertest(app)
 
 const adminToken = jwt.sign(
   { id: 'test-admin-id', email: 'admin@test.com', role: 'ADMIN' },
-  process.env.JWT_SECRET || 'quorum_super_secret_jwt_key_change_in_production',
+  process.env.JWT_SECRET,
   { expiresIn: '1d' }
 )
 
 const voterToken = jwt.sign(
   { id: 'test-voter-id', email: 'voter@test.com', role: 'VOTER' },
-  process.env.JWT_SECRET || 'quorum_super_secret_jwt_key_change_in_production',
+  process.env.JWT_SECRET,
   { expiresIn: '1d' }
 )
+
 
 beforeAll(async () => {
   await prisma.nominee.deleteMany()
