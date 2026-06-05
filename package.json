@@ -19,7 +19,9 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "seed": "node scripts/seed.js"
+    "seed": "node scripts/seed.js",
+    "lint": "eslint .",
+    "test": "vitest run"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
