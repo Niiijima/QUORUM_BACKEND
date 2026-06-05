@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 const voteSchema = z.object({
   campaignId: z.string().min(1, 'Campaign ID is required'),
   nomineeId: z.string().min(1, 'Nominee ID is required')
