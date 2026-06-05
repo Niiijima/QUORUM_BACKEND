@@ -1,20 +1,7 @@
-const multer = require('multer');
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const cloudinary = require('./cloudinary');
+import multer from 'multer';
 
-const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-        folder: 'Quorum_profiles', 
-        allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-    },
-});
+// Simple memory storage - no Cloudinary needed
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
-const upload = multer({ 
-    storage: storage,
-    limits: { 
-        fileSize: 2 * 1024 * 1024 
-    }
-});
-
-module.exports = upload;
+export default upload;
