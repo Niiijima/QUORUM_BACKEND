@@ -1,32 +1,40 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import dotenv from 'dotenv';
+import dns from 'node:dns';
+import express from 'express';
+import cors from 'cors';
+import mongoose from 'mongoose';
 
-require('dotenv').config();
-const dns = require('node:dns');
-dns.setServers(['8.8.8.8', '8.8.4.4']);  
+// Load environment variables
+dotenv.config();
 
-const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
+// Configure DNS
+dns.setServers(['8.8.8.8', '8.8.4.4']);
+
+// Import voting routes (ES module)
+import voteRoutes from './src/routes/votes.js';
 
 const url = process.env.MONGO_URL;
 
 // Connect MongoDB Atlas
 mongoose
     .connect(url)
-    .then(() => console.log(" Mongodb Connected Successfully"))
-    .catch((err) => console.log(" Connection error: ", err));
+    .then(() => console.log("✅ MongoDB Connected Successfully"))
+    .catch((err) => console.log("❌ Connection error: ", err));
 
 // Connect Cloudinary
-require('./config/cloudinary');
+import './config/cloudinary.js';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Use voting routes
+app.use('/api/votes', voteRoutes);
 
 // Multer middleware & temporary test route
-const upload = require('./config/multer');
+import upload from './config/multer.js';
 app.post("/api/test-upload", (req, res) => {
     upload.single("image")(req, res, function (err) {
         if (err) {
@@ -40,7 +48,7 @@ app.post("/api/test-upload", (req, res) => {
             return res.status(400).json({ message: "No file uploaded!" });
         }
         res.status(200).json({
-            message: " Upload successful!",
+            message: "Upload successful!",
             imageUrl: req.file.path 
         });
     });
@@ -52,5 +60,6 @@ app.get("/", (req, res) => {
 
 const port = process.env.PORT || 2000;
 app.listen(port, () => {
-    console.log(`quorum server is running on port ${port}`);
+    console.log(`Quorum server is running on port ${port}`);
+    console.log(`Voting API: http://localhost:${port}/api/votes`);
 });

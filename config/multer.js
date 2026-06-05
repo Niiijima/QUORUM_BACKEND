@@ -1,20 +1,16 @@
-const multer = require('multer');
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const cloudinary = require('./cloudinary');
+import multer from 'multer';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import cloudinary from './cloudinary.js';
 
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
-        folder: 'Quorum_profiles', // Organized folder for profile photos
-        allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-    },
-});
-
-const upload = multer({ 
-    storage: storage,
-    limits: { 
-        fileSize: 2 * 1024 * 1024 
+        folder: 'quorum_uploads',
+        allowed_formats: ['jpg', 'png', 'jpeg', 'gif', 'webp'],
+        transformation: [{ width: 1000, height: 1000, crop: 'limit' }]
     }
 });
 
-module.exports = upload;
+const upload = multer({ storage: storage });
+
+export default upload;
