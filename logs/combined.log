@@ -1,0 +1,101 @@
+{"level":"info","message":"Successfully connected to MongoDB","timestamp":"2026-06-05T14:45:42.306Z"}
+{"level":"info","message":"Quorum server is running on http://localhost:2000","timestamp":"2026-06-05T14:45:42.338Z"}
+{"level":"info","message":"Successfully connected to MongoDB","timestamp":"2026-06-05T14:49:40.295Z"}
+{"level":"info","message":"Quorum server is running on http://localhost:2000","timestamp":"2026-06-05T14:49:40.328Z"}
+{"level":"info","message":"GET /","timestamp":"2026-06-05T14:51:44.144Z"}
+{"level":"info","message":"GET /favicon.ico","timestamp":"2026-06-05T14:51:44.385Z"}
+{"level":"warn","message":"404 - Route not found: /favicon.ico","timestamp":"2026-06-05T14:51:44.387Z"}
+{"level":"info","message":"GET /api/test-error","timestamp":"2026-06-05T14:52:12.077Z"}
+{"level":"warn","message":"404 - Route not found: /api/test-error","timestamp":"2026-06-05T14:52:12.079Z"}
+{"level":"info","message":"Successfully connected to MongoDB","timestamp":"2026-06-05T15:17:21.506Z"}
+{"level":"info","message":"Quorum server is running on http://localhost:2000","timestamp":"2026-06-05T15:17:21.524Z"}
+{"level":"info","message":"Successfully connected to MongoDB","timestamp":"2026-06-05T15:18:38.580Z"}
+{"level":"info","message":"Quorum server is running on http://localhost:2000","timestamp":"2026-06-05T15:18:38.592Z"}
+{"level":"info","message":"Successfully connected to MongoDB","timestamp":"2026-06-05T15:19:40.887Z"}
+{"level":"info","message":"Quorum server is running on http://localhost:2000","timestamp":"2026-06-05T15:19:40.895Z"}
+{"level":"info","message":"Successfully connected to MongoDB","timestamp":"2026-06-05T15:28:07.641Z"}
+{"level":"info","message":"Quorum server is running on http://localhost:2000","timestamp":"2026-06-05T15:28:07.652Z"}
+{"level":"info","message":"GET /api-docs","timestamp":"2026-06-05T15:29:19.965Z"}
+{"level":"info","message":"GET /api-docs/","timestamp":"2026-06-05T15:29:19.977Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui.css","timestamp":"2026-06-05T15:29:20.073Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-bundle.js","timestamp":"2026-06-05T15:29:20.093Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-standalone-preset.js","timestamp":"2026-06-05T15:29:20.095Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-init.js","timestamp":"2026-06-05T15:29:20.097Z"}
+{"level":"info","message":"GET /api-docs/favicon-32x32.png","timestamp":"2026-06-05T15:29:20.663Z"}
+{"level":"info","message":"GET /api-docs/favicon-32x32.png","timestamp":"2026-06-05T15:29:21.202Z"}
+{"level":"info","message":"GET /api-docs/","timestamp":"2026-06-05T15:49:07.405Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui.css","timestamp":"2026-06-05T15:49:07.436Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-bundle.js","timestamp":"2026-06-05T15:49:07.446Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-standalone-preset.js","timestamp":"2026-06-05T15:49:07.449Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-init.js","timestamp":"2026-06-05T15:49:07.450Z"}
+{"level":"info","message":"GET /api-docs/favicon-32x32.png","timestamp":"2026-06-05T15:49:07.954Z"}
+{"level":"info","message":"GET /api-docs/favicon-32x32.png","timestamp":"2026-06-05T15:49:08.332Z"}
+{"level":"info","message":"Successfully connected to MongoDB","timestamp":"2026-06-05T15:50:21.674Z"}
+{"level":"info","message":"Quorum server is running on http://localhost:2000","timestamp":"2026-06-05T15:50:21.684Z"}
+{"level":"info","message":"GET /api-docs/","timestamp":"2026-06-05T15:50:31.279Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui.css","timestamp":"2026-06-05T15:50:31.315Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-standalone-preset.js","timestamp":"2026-06-05T15:50:31.325Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-bundle.js","timestamp":"2026-06-05T15:50:31.326Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-init.js","timestamp":"2026-06-05T15:50:31.329Z"}
+{"level":"info","message":"GET /api-docs/favicon-32x32.png","timestamp":"2026-06-05T15:50:31.522Z"}
+{"level":"info","message":"GET /api-docs/favicon-32x32.png","timestamp":"2026-06-05T15:50:31.649Z"}
+{"level":"info","message":"GET /api/auth/login","timestamp":"2026-06-05T15:52:18.835Z"}
+{"level":"warn","message":"404 - Route not found: /api/auth/login","timestamp":"2026-06-05T15:52:18.836Z"}
+{"level":"info","message":"GET /favicon.ico","timestamp":"2026-06-05T15:52:19.888Z"}
+{"level":"warn","message":"404 - Route not found: /favicon.ico","timestamp":"2026-06-05T15:52:19.888Z"}
+{"level":"info","message":"Successfully connected to MongoDB","timestamp":"2026-06-05T15:56:00.201Z"}
+{"level":"info","message":"Quorum server is running on http://localhost:2000","timestamp":"2026-06-05T15:56:00.214Z"}
+{"level":"info","message":"GET /api-docs/","timestamp":"2026-06-05T15:56:30.664Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui.css","timestamp":"2026-06-05T15:56:30.705Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-bundle.js","timestamp":"2026-06-05T15:56:30.712Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-standalone-preset.js","timestamp":"2026-06-05T15:56:30.714Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-init.js","timestamp":"2026-06-05T15:56:30.715Z"}
+{"level":"info","message":"GET /api-docs/favicon-32x32.png","timestamp":"2026-06-05T15:56:30.923Z"}
+{"level":"info","message":"GET /api-docs/favicon-32x32.png","timestamp":"2026-06-05T15:56:31.035Z"}
+{"level":"info","message":"GET /api-docs/","timestamp":"2026-06-05T15:56:33.629Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui.css","timestamp":"2026-06-05T15:56:33.657Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-bundle.js","timestamp":"2026-06-05T15:56:33.665Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-standalone-preset.js","timestamp":"2026-06-05T15:56:33.667Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-init.js","timestamp":"2026-06-05T15:56:33.668Z"}
+{"level":"info","message":"GET /api-docs/favicon-32x32.png","timestamp":"2026-06-05T15:56:33.775Z"}
+{"level":"info","message":"GET /api-docs/favicon-32x32.png","timestamp":"2026-06-05T15:56:33.855Z"}
+{"level":"info","message":"GET /api-docs/","timestamp":"2026-06-05T15:56:34.787Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui.css","timestamp":"2026-06-05T15:56:34.807Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-bundle.js","timestamp":"2026-06-05T15:56:34.815Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-standalone-preset.js","timestamp":"2026-06-05T15:56:34.816Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-init.js","timestamp":"2026-06-05T15:56:34.818Z"}
+{"level":"info","message":"GET /api-docs/favicon-32x32.png","timestamp":"2026-06-05T15:56:34.925Z"}
+{"level":"info","message":"GET /api-docs/favicon-32x32.png","timestamp":"2026-06-05T15:56:35.032Z"}
+{"level":"info","message":"GET /api-docs/","timestamp":"2026-06-05T15:57:13.583Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui.css","timestamp":"2026-06-05T15:57:13.618Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-bundle.js","timestamp":"2026-06-05T15:57:13.640Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-standalone-preset.js","timestamp":"2026-06-05T15:57:13.643Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-init.js","timestamp":"2026-06-05T15:57:13.644Z"}
+{"level":"info","message":"GET /api-docs/favicon-32x32.png","timestamp":"2026-06-05T15:57:13.760Z"}
+{"level":"info","message":"Successfully connected to MongoDB","timestamp":"2026-06-05T15:59:43.558Z"}
+{"level":"info","message":"Quorum server is running on http://localhost:2000","timestamp":"2026-06-05T15:59:43.572Z"}
+{"level":"info","message":"GET /api-docs/","timestamp":"2026-06-05T16:00:12.357Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui.css","timestamp":"2026-06-05T16:00:12.385Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-standalone-preset.js","timestamp":"2026-06-05T16:00:12.394Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-bundle.js","timestamp":"2026-06-05T16:00:12.395Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-init.js","timestamp":"2026-06-05T16:00:12.398Z"}
+{"level":"info","message":"GET /api-docs/favicon-32x32.png","timestamp":"2026-06-05T16:00:13.223Z"}
+{"level":"info","message":"GET /api-docs/favicon-32x32.png","timestamp":"2026-06-05T16:00:13.837Z"}
+{"level":"info","message":"Successfully connected to MongoDB","timestamp":"2026-06-05T16:02:41.792Z"}
+{"level":"info","message":"Quorum server is running on http://localhost:2000","timestamp":"2026-06-05T16:02:41.809Z"}
+{"level":"info","message":"GET /api-docs/","timestamp":"2026-06-05T16:03:07.553Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui.css","timestamp":"2026-06-05T16:03:07.597Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-bundle.js","timestamp":"2026-06-05T16:03:07.602Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-standalone-preset.js","timestamp":"2026-06-05T16:03:07.603Z"}
+{"level":"info","message":"GET /api-docs/swagger-ui-init.js","timestamp":"2026-06-05T16:03:07.605Z"}
+{"level":"info","message":"GET /api-docs/favicon-32x32.png","timestamp":"2026-06-05T16:03:08.076Z"}
+2026-06-05 17:10:17 [INFO]: Successfully connected to MongoDB
+2026-06-05 17:10:17 [INFO]: Quorum server is running on http://localhost:2000
+2026-06-05 17:40:21 [INFO]: Successfully connected to MongoDB
+2026-06-05 17:40:21 [INFO]: Quorum server is running on http://localhost:2000
+2026-06-05 17:41:38 [INFO]: GET /test-sentry
+2026-06-05 17:41:38 [ERROR]: Test Sentry error triggered {"error":" This is a deliberate test error for Sentry!"}
+2026-06-05 18:15:37 [INFO]: Successfully connected to MongoDB
+2026-06-05 18:15:37 [INFO]: Quorum server is running on http://localhost:2000
+2026-06-05 18:16:18 [INFO]: GET /test-sentry
+2026-06-05 18:16:18 [ERROR]: Test Sentry error triggered {"error":"This is a deliberate test error for Sentry!"}

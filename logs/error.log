@@ -1,0 +1,2 @@
+2026-06-05 17:41:38 [ERROR]: Test Sentry error triggered {"error":" This is a deliberate test error for Sentry!"}
+2026-06-05 18:16:18 [ERROR]: Test Sentry error triggered {"error":"This is a deliberate test error for Sentry!"}
