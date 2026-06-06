@@ -7,14 +7,29 @@ datasource db {
   url      = env("MONGO_URL")
 }
 
+enum Role {
+  USER
+  VOTER
+  ADMIN
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
 model User {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   email     String   @unique
   name      String?
   password  String
-  role      String   @default("user")
+  role      Role     @default(USER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  wallet    Wallet?
+  votes     Vote[]
 }
 
 model Wallet {
@@ -24,6 +39,19 @@ model Wallet {
   isLocked  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Transaction {
+  id        String            @id @default(auto()) @map("_id") @db.ObjectId
+  walletId  String            @db.ObjectId
+  userId    String            @db.ObjectId
+  type      String
+  amount    Int
+  reference String            @unique
+  status    TransactionStatus @default(PENDING)
+  createdAt DateTime          @default(now())
 }
 
 model Vote {
@@ -34,17 +62,8 @@ model Vote {
   version    Int      @default(0)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  
-  @@unique([userId, campaignId])
-}
 
-model Transaction {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  walletId  String   @db.ObjectId
-  userId    String   @db.ObjectId
-  type      String
-  amount    Int
-  reference String   @unique
-  status    String   @default("PENDING")
-  createdAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, campaignId])
 }
