@@ -1,6 +1,6 @@
 import { Worker } from 'bullmq'
-import prisma from '../config/prisma.js'
-import { connection } from '../config/queue.js'
+import prisma from '../src/config/prisma.js'
+import { connection } from '../src/config/queue.js'
 
 const worker = new Worker(
   'mint-coins',

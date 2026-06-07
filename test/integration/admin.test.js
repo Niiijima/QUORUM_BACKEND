@@ -1,8 +1,8 @@
 import 'dotenv/config'
 import supertest from 'supertest'
 import jwt from 'jsonwebtoken'
-import app from '../../app.js'
-import prisma from '../../config/prisma.js'
+import app from '../../src/app.js'
+import prisma from '../../src/config/prisma.js'
 
 const request = supertest(app)
 
