@@ -27,7 +27,7 @@ mongoose
     .catch((err) => console.log(" Connection error: ", err));
 
 // Connect Cloudinary
-require('./config/cloudinary');
+import './config/cloudinary.js';
 
 const app = express();
 app.use(cors());
@@ -62,11 +62,13 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
+// Use voting routes
+app.use('/api/votes', voteRoutes);
 
 app.post("/api/test-upload", (req, res) => {
     upload.single("image")(req, res, function (err) {
         if (err) {
-            console.error("❌ MULTER-CLOUDINARY PIPELINE CRASH:", err);
+            console.error(" MULTER-CLOUDINARY PIPELINE CRASH:", err);
             return res.status(500).json({ 
                 message: "Pipeline Error encountered", 
                 errorDetails: err.message || err.toString() 
@@ -76,7 +78,7 @@ app.post("/api/test-upload", (req, res) => {
             return res.status(400).json({ message: "No file uploaded!" });
         }
         res.status(200).json({
-            message: " Upload successful!",
+            message: "Upload successful!",
             imageUrl: req.file.path 
         });
     });
@@ -88,5 +90,6 @@ app.get("/", (req, res) => {
 
 const port = process.env.PORT || 2000;
 app.listen(port, () => {
-    console.log(`quorum server is running on port ${port}`);
+    console.log(`Quorum server is running on port ${port}`);
+    console.log(`Voting API: http://localhost:${port}/api/votes`);
 });

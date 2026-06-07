@@ -8,6 +8,8 @@
     "express": "^5.2.1",
     "helmet": "^8.2.0",
     "init": "^0.1.2",
+    "ioredis": "^5.11.0",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.6.3",
     "morgan": "^1.11.0",
     "multer": "^2.1.1",
@@ -24,6 +26,10 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
-  }
+    "@vitest/coverage-v8": "^4.1.8",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2",
+    "vitest": "^4.1.8"
+  },
+  "type": "module"
 }
