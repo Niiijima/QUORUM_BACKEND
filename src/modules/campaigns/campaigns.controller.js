@@ -1,41 +1,41 @@
-const campaignService = require('./campaigns.service')
+import * as campaignService from './campaigns.service.js'
 
-async function createCampaign(req, res, next) {
+export async function createCampaign(req, res, next) {
   try {
     const campaign = await campaignService.createCampaign(req.body)
     res.status(201).json({ success: true, data: campaign })
   } catch (err) { next(err) }
 }
 
-async function listCampaigns(req, res, next) {
+export async function listCampaigns(req, res, next) {
   try {
     const campaigns = await campaignService.getAllCampaigns()
     res.json({ success: true, data: campaigns })
   } catch (err) { next(err) }
 }
 
-async function listActiveCampaigns(req, res, next) {
+export async function listActiveCampaigns(req, res, next) {
   try {
     const campaigns = await campaignService.getActiveCampaigns()
     res.json({ success: true, data: campaigns })
   } catch (err) { next(err) }
 }
 
-async function getCampaign(req, res, next) {
+export async function getCampaign(req, res, next) {
   try {
     const campaign = await campaignService.getCampaignById(req.params.id)
     res.json({ success: true, data: campaign })
   } catch (err) { next(err) }
 }
 
-async function updateCampaign(req, res, next) {
+export async function updateCampaign(req, res, next) {
   try {
     const campaign = await campaignService.updateCampaign(req.params.id, req.body)
     res.json({ success: true, data: campaign })
   } catch (err) { next(err) }
 }
 
-async function changeCampaignStatus(req, res, next) {
+export async function changeCampaignStatus(req, res, next) {
   try {
     const campaign = await campaignService.updateCampaignStatus(
       req.params.id,
@@ -45,7 +45,7 @@ async function changeCampaignStatus(req, res, next) {
   } catch (err) { next(err) }
 }
 
-async function addCategory(req, res, next) {
+export async function addCategory(req, res, next) {
   try {
     const category = await campaignService.addCategory(
       req.params.id,
@@ -55,14 +55,14 @@ async function addCategory(req, res, next) {
   } catch (err) { next(err) }
 }
 
-async function listCategories(req, res, next) {
+export async function listCategories(req, res, next) {
   try {
     const categories = await campaignService.getCategoriesByCampaign(req.params.id)
     res.json({ success: true, data: categories })
   } catch (err) { next(err) }
 }
 
-async function addNominee(req, res, next) {
+export async function addNominee(req, res, next) {
   try {
     const nominee = await campaignService.addNominee(
       req.params.categoryId,
@@ -72,22 +72,9 @@ async function addNominee(req, res, next) {
   } catch (err) { next(err) }
 }
 
-async function listNomineesByCampaign(req, res, next) {
+export async function listNomineesByCampaign(req, res, next) {
   try {
     const nominees = await campaignService.getNomineesByCampaign(req.params.id)
     res.json({ success: true, data: nominees })
   } catch (err) { next(err) }
-}
-
-module.exports = {
-  createCampaign,
-  listCampaigns,
-  listActiveCampaigns,
-  getCampaign,
-  updateCampaign,
-  changeCampaignStatus,
-  addCategory,
-  listCategories,
-  addNominee,
-  listNomineesByCampaign,
 }

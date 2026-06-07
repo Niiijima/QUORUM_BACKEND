@@ -1,34 +1,65 @@
-require('dotenv').config() 
-const supertest = require('supertest')
-const jwt = require('jsonwebtoken')
-const app = require('../../app')
-const prisma = require('../../config/prisma')
+import 'dotenv/config'
+import supertest from 'supertest'
+import jwt from 'jsonwebtoken'
+import app from '../../app.js'
+import prisma from '../../config/prisma.js'
 
 const request = supertest(app)
 
-const adminToken = jwt.sign(
-  { id: 'test-admin-id', email: 'admin@test.com', role: 'ADMIN' },
-  process.env.JWT_SECRET,
-  { expiresIn: '1d' }
-)
-
-const voterToken = jwt.sign(
-  { id: 'test-voter-id', email: 'voter@test.com', role: 'VOTER' },
-  process.env.JWT_SECRET,
-  { expiresIn: '1d' }
-)
-
+let adminToken
+let voterToken
+let adminUser
+let voterUser
 
 beforeAll(async () => {
+  // Clean up first
   await prisma.nominee.deleteMany()
   await prisma.category.deleteMany()
   await prisma.campaign.deleteMany()
+  await prisma.user.deleteMany({
+    where: { email: { in: ['admin@test.com', 'voter@test.com'] } },
+  })
+
+  // Create real users so auth middleware can find them in DB
+  adminUser = await prisma.user.create({
+    data: {
+      name: 'Test Admin',
+      email: 'admin@test.com',
+      password: 'hashedpassword',
+      role: 'ADMIN',
+    },
+  })
+
+  voterUser = await prisma.user.create({
+    data: {
+      name: 'Test Voter',
+      email: 'voter@test.com',
+      password: 'hashedpassword',
+      role: 'VOTER',
+    },
+  })
+
+  // Generate tokens with real MongoDB ObjectIds
+  adminToken = jwt.sign(
+    { id: adminUser.id, email: adminUser.email, role: adminUser.role },
+    process.env.JWT_SECRET,
+    { expiresIn: '1d' }
+  )
+
+  voterToken = jwt.sign(
+    { id: voterUser.id, email: voterUser.email, role: voterUser.role },
+    process.env.JWT_SECRET,
+    { expiresIn: '1d' }
+  )
 })
 
 afterAll(async () => {
   await prisma.nominee.deleteMany()
   await prisma.category.deleteMany()
   await prisma.campaign.deleteMany()
+  await prisma.user.deleteMany({
+    where: { email: { in: ['admin@test.com', 'voter@test.com'] } },
+  })
   await prisma.$disconnect()
 })
 

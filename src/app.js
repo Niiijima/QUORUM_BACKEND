@@ -1,13 +1,14 @@
-require('dotenv').config()
-const express = require('express')
-const cors = require('cors')
-const connectDB = require('./config/db')
-const env = require('./config/env')
-const errorHandler = require('./middleware/error')
-const { defaultLimiter } = require('./middleware/rateLimit')
-const { requestLogger } = require('./config/logger')
-const campaignRoutes = require('./modules/campaigns/campaigns.routes')
-const adminRoutes = require('./modules/admin/admin.routes')
+import 'dotenv/config'
+import express from 'express'
+import cors from 'cors'
+import connectDB from './config/db.js'
+import env from './config/env.js'
+import errorHandler from './middleware/error.js'
+import { defaultLimiter } from './middleware/rateLimit.js'
+import { requestLogger } from './config/logger.js'
+import campaignRoutes from './modules/campaigns/campaigns.routes.js'
+import adminRoutes from './modules/admin/admin.routes.js'
+import paymentRoutes from './modules/payments/payments.routes.js'
 
 const app = express()
 
@@ -18,6 +19,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(requestLogger)
 app.use(defaultLimiter)
+app.use('/api/payments', paymentRoutes)
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
@@ -32,4 +34,4 @@ app.use((req, res) => {
 
 app.use(errorHandler)
 
-module.exports = app
+export default app

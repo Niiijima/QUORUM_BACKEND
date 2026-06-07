@@ -1,4 +1,4 @@
-require('dotenv').config()
+import 'dotenv/config'
 
 const env = {
   PORT: process.env.PORT || 3000,
@@ -20,4 +20,4 @@ for (const key of required) {
   }
 }
 
-module.exports = env
+export default env

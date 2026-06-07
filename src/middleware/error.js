@@ -1,4 +1,4 @@
-function errorHandler(err, req, res, next) {
+export default function errorHandler(err, req, res, next) {
   console.error(`[ERROR] ${err.message}`)
 
   if (err.code === 'P2002') {
@@ -20,5 +20,3 @@ function errorHandler(err, req, res, next) {
     message: err.message || 'Internal server error',
   })
 }
-
-module.exports = errorHandler
