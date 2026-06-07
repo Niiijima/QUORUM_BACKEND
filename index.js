@@ -1,35 +1,17 @@
-require('dotenv').config();
-const fs = require('fs');
-const path = require('path');
-
-
-const dns = require('node:dns');
-dns.setServers(['8.8.8.8', '8.8.4.4']);  
-const helmet = require('helmet');
-const morgan = require('morgan');
-const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
-
-const userRoutes = require('./routes/userRoutes');
-const campaignRoutes = require('./routes/campaignRoutes');
-const voteRoutes = require('./routes/voteRoutes');  
-
-const url = process.env.MONGO_URL;
-
-// Multer middleware & temporary test route
-const upload = require('./config/multer');
-
-// Connect MongoDB Atlas
-mongoose
-    .connect(url)
-    .then(() => console.log(" MongoDB Connected Successfully"))
-    .catch((err) => console.log(" Connection error: ", err));
-
-// Connect Cloudinary
+import dotenv from 'dotenv';
+import express from 'express';
+import cors from 'cors';
+import prisma from './lib/prisma.js';
+import authRoutes from './routes/auth.js';
+import voteRoutes from './src/routes/votes.js';
+import upload from './config/multer.js';
 import './config/cloudinary.js';
 
+dotenv.config();
+
 const app = express();
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(helmet());
@@ -62,34 +44,32 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-// Use voting routes
+// Routes
+app.use('/auth', authRoutes);
 app.use('/api/votes', voteRoutes);
 
-app.post("/api/test-upload", (req, res) => {
-    upload.single("image")(req, res, function (err) {
-        if (err) {
-            console.error(" MULTER-CLOUDINARY PIPELINE CRASH:", err);
-            return res.status(500).json({ 
-                message: "Pipeline Error encountered", 
-                errorDetails: err.message || err.toString() 
-            });
-        }
-        if (!req.file) {
-            return res.status(400).json({ message: "No file uploaded!" });
-        }
-        res.status(200).json({
-            message: "Upload successful!",
-            imageUrl: req.file.path 
-        });
+
+
+// Test Route
+app.post("/api/test-upload", upload.single("image"), (req, res) => {
+    if (!req.file) return res.status(400).json({ message: "No file provided" });
+    res.status(200).json({ imageUrl: req.file.path });
+});
+
+app.get("/", (req, res) => res.send("Quorum Backend is running"));
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ message: "Internal Server Error" });
+});
+
+// Start Server
+const PORT = process.env.PORT || 2000;
+if (process.env.NODE_ENV !== 'test') {
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Server running on http://localhost:${PORT}`);
     });
-});
+}
 
-app.get("/", (req, res) => {
-    res.send("Hello world");
-});
-
-const port = process.env.PORT || 2000;
-app.listen(port, () => {
-    console.log(`Quorum server is running on port ${port}`);
-    console.log(`Voting API: http://localhost:${port}/api/votes`);
-});
+export { app };

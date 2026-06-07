@@ -1,26 +1,21 @@
-const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const multer = require('multer');
+import multer from 'multer';
+import * as cloudinaryStoragePackage from 'multer-storage-cloudinary';
+import cloudinary from './cloudinary.js';
 
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+// Access the class via the default/named property
+const CloudinaryStorage = cloudinaryStoragePackage.CloudinaryStorage || cloudinaryStoragePackage.default.CloudinaryStorage;
+
+console.log("Configuring Cloudinary Storage for Multer...");
 
 const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-        folder: 'Quorum_profiles', // Organized folder for profile photos
-        allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-    },
+  cloudinary: cloudinary,
+  params: {
+    folder: 'quorum_uploads',
+    format: async (req, file) => 'png',
+    public_id: (req, file) => Date.now().toString(),
+  },
 });
 
-const upload = multer({ 
-    storage: storage,
-    limits: { 
-        fileSize: 2 * 1024 * 1024 
-    }
-});
+const upload = multer({ storage });
 
-module.exports = upload;
+export default upload;
