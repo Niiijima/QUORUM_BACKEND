@@ -17,7 +17,8 @@
     "multer-storage-cloudinary": "^4.0.0",
     "prisma": "^6.19.3",
     "swagger-jsdoc": "^6.3.0",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "winston": "^3.19.0"
   },
   "scripts": {
     "start": "node index.js",

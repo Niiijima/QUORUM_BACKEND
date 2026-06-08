@@ -1,10 +1,29 @@
 import * as campaignService from './campaigns.service.js'
+import logger from '../../config/logger.js'
 
+
+const campaignService = require('./campaigns.service')
+const logger = require('../../config/logger')
 export async function createCampaign(req, res, next) {
   try {
     const campaign = await campaignService.createCampaign(req.body)
+
+    logger.info('Campaign created', {
+      campaignId: campaign.id,
+      title: campaign.title,
+      createdBy: req.user?.id,
+    })
+
     res.status(201).json({ success: true, data: campaign })
-  } catch (err) { next(err) }
+  } catch (err) {
+    logger.error('Failed to create campaign', {
+      error: err.message,
+      stack: err.stack,
+      body: req.body,
+    })
+
+    next(err)
+  }
 }
 
 export async function listCampaigns(req, res, next) {
@@ -30,9 +49,25 @@ export async function getCampaign(req, res, next) {
 
 export async function updateCampaign(req, res, next) {
   try {
-    const campaign = await campaignService.updateCampaign(req.params.id, req.body)
+    const campaign = await campaignService.updateCampaign(
+      req.params.id,
+      req.body
+    )
+
+    logger.info('Campaign updated', {
+      campaignId: req.params.id,
+      updatedBy: req.user?.id,
+    })
+
     res.json({ success: true, data: campaign })
-  } catch (err) { next(err) }
+  } catch (err) {
+    logger.error('Failed to update campaign', {
+      campaignId: req.params.id,
+      error: err.message,
+    })
+
+    next(err)
+  }
 }
 
 export async function changeCampaignStatus(req, res, next) {
@@ -41,8 +76,23 @@ export async function changeCampaignStatus(req, res, next) {
       req.params.id,
       req.body.status
     )
+
+    logger.info('Campaign status changed', {
+      campaignId: req.params.id,
+      status: req.body.status,
+      changedBy: req.user?.id,
+    })
+
     res.json({ success: true, data: campaign })
-  } catch (err) { next(err) }
+  } catch (err) {
+    logger.error('Failed to change campaign status', {
+      campaignId: req.params.id,
+      attemptedStatus: req.body.status,
+      error: err.message,
+    })
+
+    next(err)
+  }
 }
 
 export async function addCategory(req, res, next) {
@@ -51,8 +101,23 @@ export async function addCategory(req, res, next) {
       req.params.id,
       req.body.name
     )
+
+    logger.info('Category added', {
+      categoryId: category.id,
+      campaignId: req.params.id,
+      categoryName: req.body.name,
+      addedBy: req.user?.id,
+    })
+
     res.status(201).json({ success: true, data: category })
-  } catch (err) { next(err) }
+  } catch (err) {
+    logger.error('Failed to add category', {
+      campaignId: req.params.id,
+      error: err.message,
+    })
+
+    next(err)
+  }
 }
 
 export async function listCategories(req, res, next) {
@@ -68,8 +133,23 @@ export async function addNominee(req, res, next) {
       req.params.categoryId,
       req.body
     )
+
+    logger.info('Nominee added', {
+      nomineeId: nominee.id,
+      categoryId: req.params.categoryId,
+      nomineeName: nominee.name,
+      addedBy: req.user?.id,
+    })
+
     res.status(201).json({ success: true, data: nominee })
-  } catch (err) { next(err) }
+  } catch (err) {
+    logger.error('Failed to add nominee', {
+      categoryId: req.params.categoryId,
+      error: err.message,
+    })
+
+    next(err)
+  }
 }
 
 export async function listNomineesByCampaign(req, res, next) {
