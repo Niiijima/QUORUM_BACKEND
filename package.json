@@ -22,7 +22,6 @@
     "swagger-ui-express": "^5.0.1"
   },
   "scripts": {
-<<<<<<< HEAD
     "start": "node src/server.js",
     "dev": "nodemon index.js",
     "seed": "node scripts/seed.js",
@@ -30,21 +29,11 @@
     "test": "vitest run",
     "make-admin": "node scripts/makeAdmin.js",
     "seed-candidates": "node scripts/seedCandidates.js"
-=======
-    "start": "node index.js",
-    "dev": "nodemon index.js",
-    "test": "vitest run --coverage"
->>>>>>> main
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^4.1.8",
     "nodemon": "^3.1.14",
     "supertest": "^7.2.2",
     "vitest": "^4.1.8"
-<<<<<<< HEAD
   }
-=======
-  },
-  "type": "module"
->>>>>>> main
 }
