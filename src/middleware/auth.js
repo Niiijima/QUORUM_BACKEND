@@ -1,115 +1,52 @@
-import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
+// middleware/auth.js
+const jwt = require('jsonwebtoken');
 
-const prisma = new PrismaClient();
+const authMiddleware = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
 
-
-export const protect = async (req, res, next) => {
-  try {
-    let token;
-
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-      token = req.headers.authorization.split(' ')[1];
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ 
+            success: false,
+            message: "Access denied. No token provided." 
+        });
     }
 
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        error: 'Not authorized to access this route. Please login first.'
-      });
+    const token = authHeader.split(' ')[1];
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;   // { userId, role, iat, exp }
+        next();
+    } catch (error) {
+        return res.status(403).json({ 
+            success: false,
+            message: "Invalid or expired token." 
+        });
     }
+};
 
-    
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+// Role-based authorization
+const authorize = (roles = []) => {
+    return (req, res, next) => {
+        if (!req.user) {
+            return res.status(401).json({ 
+                success: false, 
+                message: "Authentication required" 
+            });
+        }
 
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
-      include: { wallet: true }
-    });
+        if (roles.length > 0 && !roles.includes(req.user.role)) {
+            return res.status(403).json({ 
+                success: false,
+                message: "Forbidden: Insufficient permissions" 
+            });
+        }
 
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        error: 'User not found. Token is invalid.'
-      });
-    }
-
-    req.user = {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      walletId: user.wallet?.id
+        next();
     };
-
-    next();
-  } catch (error) {
-    console.error('Auth middleware error:', error);
-
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({
-        success: false,
-        error: 'Invalid token. Please login again.'
-      });
-    }
-
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({
-        success: false,
-        error: 'Token expired. Please login again.'
-      });
-    }
-
-    res.status(401).json({
-      success: false,
-      error: 'Not authorized to access this route.'
-    });
-  }
 };
 
- 
-export const authorize = (...roles) => {
-  return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({
-        success: false,
-        error: `Access denied. Role '${req.user.role}' is not authorized to access this route.`
-      });
-    }
-    next();
-  };
-};
-
-
-export const optionalAuth = async (req, res, next) => {
-  try {
-    let token;
-
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-      token = req.headers.authorization.split(' ')[1];
-    }
-
-    if (token) {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-      const user = await prisma.user.findUnique({
-        where: { id: decoded.id },
-        include: { wallet: true }
-      });
-
-      if (user) {
-        req.user = {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          walletId: user.wallet?.id
-        };
-      }
-    }
-
-    next();
-  } catch (error) {
-    // Don't fail if token is invalid - just continue without user
-    next();
-  }
+module.exports = { 
+    authMiddleware, 
+    authorize 
 };

@@ -1,33 +1,37 @@
-cat > src/services/votingService.js
+import mongoose from 'mongoose';
+
 const voteSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: [id],
-    required: true,
+    ref: 'User',
+    required: true
   },
   campaignId: {
     type: String,
     required: true,
-    index: true,
+    index: true
   },
   nomineeId: {
     type: String,
-    required: true,
+    required: true
   },
   version: {
     type: Number,
-    default: 0,
+    default: 0
   },
   transactionHash: {
     type: String,
     unique: true,
-    sparse: true,
-  },
+    sparse: true
+  }
 }, {
-  timestamps: true,
+  timestamps: true
 });
 
-// Prevent duplicate votes
 voteSchema.index({ userId: 1, campaignId: 1 }, { unique: true });
 
-export default mongoose.model('Vote', voteSchema);
+voteSchema.index({ campaignId: 1, createdAt: -1 });
+
+const Vote = mongoose.model('Vote', voteSchema);
+
+export default Vote;
