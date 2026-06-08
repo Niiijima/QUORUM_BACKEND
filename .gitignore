@@ -1,3 +1,7 @@
 node_modules/
 .env
+<<<<<<< HEAD
 coverage
+=======
+logs/*.log
+>>>>>>> b37bca4 (logging files)
