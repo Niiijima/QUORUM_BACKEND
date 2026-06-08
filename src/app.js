@@ -26,7 +26,6 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 app.use(requestLogger)
-app.use(morgan('dev'))
 app.use(defaultLimiter)
 
 app.use('/api/payments', paymentRoutes)

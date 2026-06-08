@@ -2,8 +2,6 @@ import * as campaignService from './campaigns.service.js'
 import logger from '../../config/logger.js'
 
 
-const campaignService = require('./campaigns.service')
-const logger = require('../../config/logger')
 export async function createCampaign(req, res, next) {
   try {
     const campaign = await campaignService.createCampaign(req.body)
