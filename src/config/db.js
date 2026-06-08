@@ -1,4 +1,4 @@
-const prisma = require('./prisma')
+import prisma from './prisma.js'
 
 async function connectDB() {
   try {
@@ -10,4 +10,4 @@ async function connectDB() {
   }
 }
 
-module.exports = connectDB
+export default connectDB
