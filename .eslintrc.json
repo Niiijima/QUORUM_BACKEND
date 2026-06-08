@@ -1,10 +1,12 @@
 {
   "env": {
     "node": true,
-    "es2021": true
+    "es2021": true,
+    "jest": true
   },
   "extends": [
-    "eslint:recommended"
+    "eslint:recommended",
+    "plugin:prettier/recommended"
   ],
   "parserOptions": {
     "ecmaVersion": "latest",
@@ -12,13 +14,14 @@
   },
   "rules": {
     "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
-    "no-console": "off"
+    "no-console": "off",
+    "prettier/prettier": "error"
   },
   "overrides": [
     {
       "files": ["test/**/*.js", "tests/**/*.js", "**/*.test.js"],
       "env": {
-        "jest": true"
+        "jest": true
       },
       "globals": {
         "describe": "readonly",
