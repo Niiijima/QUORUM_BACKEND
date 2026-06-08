@@ -2,10 +2,12 @@
   "dependencies": {
     "@prisma/client": "^6.19.3",
     "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
     "cloudinary": "^2.10.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
     "helmet": "^8.2.0",
     "init": "^0.1.2",
     "ioredis": "^5.11.0",
@@ -20,16 +22,17 @@
   },
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
+    "dev": "nodemon index.js",
     "seed": "node scripts/seed.js",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "make-admin": "node scripts/makeAdmin.js",
+    "seed-candidates": "node scripts/seedCandidates.js"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^4.1.8",
     "nodemon": "^3.1.14",
     "supertest": "^7.2.2",
     "vitest": "^4.1.8"
-  },
-  "type": "module"
+  }
 }

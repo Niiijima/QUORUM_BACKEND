@@ -2,7 +2,6 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 
-
 const dns = require('node:dns');
 dns.setServers(['8.8.8.8', '8.8.4.4']);  
 const helmet = require('helmet');
@@ -10,33 +9,54 @@ const morgan = require('morgan');
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const rateLimit = require('express-rate-limit');
 
 const userRoutes = require('./routes/userRoutes');
 const campaignRoutes = require('./routes/campaignRoutes');
-const voteRoutes = require('./routes/voteRoutes');  
+const voteRoutes = require('./routes/voteRoutes');   
+const authRoutes = require('./routes/authRoutes');
 
 const url = process.env.MONGO_URL;
 
-// Multer middleware & temporary test route
+
 const upload = require('./config/multer');
 
-// Connect MongoDB Atlas
+
 mongoose
     .connect(url)
-    .then(() => console.log(" MongoDB Connected Successfully"))
-    .catch((err) => console.log(" Connection error: ", err));
+    .then(() => console.log("MongoDB Connected Successfully"))
+    .catch((err) => console.log("Connection error: ", err));
 
-// Connect Cloudinary
-import './config/cloudinary.js';
 
 const app = express();
-app.use(cors());
+
+
+app.use(cors({
+    origin: ['http://localhost:3000', 'http://localhost:5173'],
+    credentials: true
+}));
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: {
+        message: "Too many requests from this IP, please try again after 15 minutes."
+    },
+    standardHeaders: true, 
+    legacyHeaders: false, 
+});
+
+app.use(limiter);
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 app.use(morgan('dev'));
 
+
 app.use('/api/users', userRoutes);
 app.use('/api/campaigns', campaignRoutes);
+app.use('/api/votes', voteRoutes); 
+app.use('/api/auth', authRoutes);
 
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
@@ -55,20 +75,17 @@ const swaggerOptions = {
       },
     ],
   },
-  
   apis: ['./index.js', './src/routes/*.js'], 
 };
 
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-// Use voting routes
-app.use('/api/votes', voteRoutes);
 
 app.post("/api/test-upload", (req, res) => {
     upload.single("image")(req, res, function (err) {
         if (err) {
-            console.error(" MULTER-CLOUDINARY PIPELINE CRASH:", err);
+            console.error("MULTER-CLOUDINARY PIPELINE CRASH:", err);
             return res.status(500).json({ 
                 message: "Pipeline Error encountered", 
                 errorDetails: err.message || err.toString() 
@@ -85,11 +102,12 @@ app.post("/api/test-upload", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-    res.send("Hello world");
+    res.send("Quorum Server is active.");
 });
 
 const port = process.env.PORT || 2000;
 app.listen(port, () => {
     console.log(`Quorum server is running on port ${port}`);
+    console.log(`Swagger Documentation: http://localhost:${port}/api-docs`);
     console.log(`Voting API: http://localhost:${port}/api/votes`);
 });
