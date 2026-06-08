@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "argon2": "^0.44.0",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.10.0",
@@ -10,7 +11,7 @@
     "express-rate-limit": "^8.5.2",
     "helmet": "^8.2.0",
     "init": "^0.1.2",
-    "ioredis": "^5.11.0",
+    "ioredis": "^5.11.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.6.3",
     "morgan": "^1.11.0",
@@ -21,6 +22,7 @@
     "swagger-ui-express": "^5.0.1"
   },
   "scripts": {
+<<<<<<< HEAD
     "start": "node src/server.js",
     "dev": "nodemon index.js",
     "seed": "node scripts/seed.js",
@@ -28,11 +30,21 @@
     "test": "vitest run",
     "make-admin": "node scripts/makeAdmin.js",
     "seed-candidates": "node scripts/seedCandidates.js"
+=======
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "vitest run --coverage"
+>>>>>>> main
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^4.1.8",
     "nodemon": "^3.1.14",
     "supertest": "^7.2.2",
     "vitest": "^4.1.8"
+<<<<<<< HEAD
   }
+=======
+  },
+  "type": "module"
+>>>>>>> main
 }
