@@ -28,7 +28,7 @@ mongoose
     .catch((err) => console.log("Connection error: ", err));
 
 
-dotenv.config();
+
 
 const app = express();
 
