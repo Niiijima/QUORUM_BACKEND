@@ -1,5 +1,12 @@
-function errorHandler(err, req, res, next) {
-  console.error(`[ERROR] ${err.message}`)
+import logger from '../config/logger.js'
+
+export default function errorHandler(err, req, res, next) {
+  logger.error('Unhandled Error', {
+    message: err.message,
+    stack: err.stack,
+    path: req.originalUrl,
+    method: req.method,
+  })
 
   if (err.code === 'P2002') {
     return res.status(409).json({
@@ -7,6 +14,7 @@ function errorHandler(err, req, res, next) {
       message: 'A record with this value already exists',
     })
   }
+
   if (err.code === 'P2025') {
     return res.status(404).json({
       success: false,
@@ -15,10 +23,9 @@ function errorHandler(err, req, res, next) {
   }
 
   const status = err.status || 500
-  res.status(status).json({
+
+  return res.status(status).json({
     success: false,
     message: err.message || 'Internal server error',
   })
 }
-
-module.exports = errorHandler

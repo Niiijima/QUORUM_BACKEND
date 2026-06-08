@@ -1,10 +1,10 @@
-require('dotenv').config()
+import 'dotenv/config'
 
 const env = {
   PORT: process.env.PORT || 3000,
   NODE_ENV: process.env.NODE_ENV || 'development',
-  MONGO_URL: process.env.MONGO_URL,
-  JWT_SECRET: process.env.JWT_SECRET,
+  MONGO_URL: process.env.MONGO_URL || '',
+  JWT_SECRET: process.env.JWT_SECRET || '' ,
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '15m',
   PAYSTACK_SECRET_KEY: process.env.PAYSTACK_SECRET_KEY,
   PAYSTACK_PUBLIC_KEY: process.env.PAYSTACK_PUBLIC_KEY,
@@ -20,4 +20,4 @@ for (const key of required) {
   }
 }
 
-module.exports = env
+export default env

@@ -1,5 +1,5 @@
-const { Queue } = require('bullmq')
-const env = require('./env')
+import { Queue } from 'bullmq'
+import env from './env.js'
 
 const connection = {
   host: new URL(env.REDIS_URL).hostname,
@@ -8,4 +8,4 @@ const connection = {
 
 const mintCoinsQueue = new Queue('mint-coins', { connection })
 
-module.exports = { mintCoinsQueue, connection }
+export { mintCoinsQueue, connection }

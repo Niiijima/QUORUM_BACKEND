@@ -1,6 +1,6 @@
-const prisma = require('../../config/prisma')
+import prisma from '../../config/prisma.js'
 
-async function createCampaign(data) {
+export async function createCampaign(data) {
   return prisma.campaign.create({
     data: {
       title: data.title,
@@ -13,14 +13,14 @@ async function createCampaign(data) {
   })
 }
 
-async function getAllCampaigns() {
+export async function getAllCampaigns() {
   return prisma.campaign.findMany({
     orderBy: { createdAt: 'desc' },
     include: { categories: true },
   })
 }
 
-async function getActiveCampaigns() {
+export async function getActiveCampaigns() {
   return prisma.campaign.findMany({
     where: { status: 'ACTIVE' },
     orderBy: { createdAt: 'desc' },
@@ -30,7 +30,7 @@ async function getActiveCampaigns() {
   })
 }
 
-async function getCampaignById(id) {
+export async function getCampaignById(id) {
   const campaign = await prisma.campaign.findUnique({
     where: { id },
     include: {
@@ -45,7 +45,7 @@ async function getCampaignById(id) {
   return campaign
 }
 
-async function updateCampaign(id, data) {
+export async function updateCampaign(id, data) {
   const campaign = await prisma.campaign.findUnique({ where: { id } })
   if (!campaign) {
     const err = new Error('Campaign not found')
@@ -60,7 +60,7 @@ async function updateCampaign(id, data) {
   return prisma.campaign.update({ where: { id }, data })
 }
 
-async function updateCampaignStatus(id, status) {
+export async function updateCampaignStatus(id, status) {
   const campaign = await prisma.campaign.findUnique({ where: { id } })
   if (!campaign) {
     const err = new Error('Campaign not found')
@@ -75,7 +75,7 @@ async function updateCampaignStatus(id, status) {
   return prisma.campaign.update({ where: { id }, data: { status } })
 }
 
-async function addCategory(campaignId, name) {
+export async function addCategory(campaignId, name) {
   const campaign = await prisma.campaign.findUnique({ where: { id: campaignId } })
   if (!campaign) {
     const err = new Error('Campaign not found')
@@ -85,14 +85,14 @@ async function addCategory(campaignId, name) {
   return prisma.category.create({ data: { campaignId, name } })
 }
 
-async function getCategoriesByCampaign(campaignId) {
+export async function getCategoriesByCampaign(campaignId) {
   return prisma.category.findMany({
     where: { campaignId },
     include: { nominees: true },
   })
 }
 
-async function addNominee(categoryId, data) {
+export async function addNominee(categoryId, data) {
   const category = await prisma.category.findUnique({ where: { id: categoryId } })
   if (!category) {
     const err = new Error('Category not found')
@@ -109,30 +109,16 @@ async function addNominee(categoryId, data) {
   })
 }
 
-async function getNomineesByCategory(categoryId) {
+export async function getNomineesByCategory(categoryId) {
   return prisma.nominee.findMany({
     where: { categoryId },
     orderBy: { createdAt: 'asc' },
   })
 }
 
-async function getNomineesByCampaign(campaignId) {
+export async function getNomineesByCampaign(campaignId) {
   return prisma.nominee.findMany({
     where: { category: { campaignId } },
     include: { category: true },
   })
-}
-
-module.exports = {
-  createCampaign,
-  getAllCampaigns,
-  getActiveCampaigns,
-  getCampaignById,
-  updateCampaign,
-  updateCampaignStatus,
-  addCategory,
-  getCategoriesByCampaign,
-  addNominee,
-  getNomineesByCategory,
-  getNomineesByCampaign,
 }
