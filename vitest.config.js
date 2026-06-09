@@ -5,6 +5,10 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     testTimeout: 30000,
-    include: ['src/tests/**/*.test.js'],
+    include: [
+      'test/integration/campaigns.test.js',
+      'test/integration/admin.test.js',
+      'test/integration/payments.test.js',
+    ],
   },
 })

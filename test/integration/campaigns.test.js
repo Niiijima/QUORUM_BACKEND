@@ -1,34 +1,65 @@
-require('dotenv').config() 
-const supertest = require('supertest')
-const jwt = require('jsonwebtoken')
-const app = require('../../app')
-const prisma = require('../../config/prisma')
+import 'dotenv/config'
+import supertest from 'supertest'
+import jwt from 'jsonwebtoken'
+import app from '../../src/app.js'
+import prisma from '../../src/config/prisma.js'
 
 const request = supertest(app)
 
-const adminToken = jwt.sign(
-  { id: 'test-admin-id', email: 'admin@test.com', role: 'ADMIN' },
-  process.env.JWT_SECRET,
-  { expiresIn: '1d' }
-)
-
-const voterToken = jwt.sign(
-  { id: 'test-voter-id', email: 'voter@test.com', role: 'VOTER' },
-  process.env.JWT_SECRET,
-  { expiresIn: '1d' }
-)
-
+let adminToken
+let voterToken
+let adminUser
+let voterUser
 
 beforeAll(async () => {
+  // Clean up first
   await prisma.nominee.deleteMany()
   await prisma.category.deleteMany()
   await prisma.campaign.deleteMany()
+  await prisma.user.deleteMany({
+    where: { email: { in: ['admin@test.com', 'voter@test.com'] } },
+  })
+
+  // Create real users so auth middleware can find them in DB
+  adminUser = await prisma.user.create({
+    data: {
+      name: 'Test Admin',
+      email: 'admin@test.com',
+      password: 'hashedpassword',
+      role: 'ADMIN',
+    },
+  })
+
+  voterUser = await prisma.user.create({
+    data: {
+      name: 'Test Voter',
+      email: 'voter@test.com',
+      password: 'hashedpassword',
+      role: 'VOTER',
+    },
+  })
+
+  // Generate tokens with real MongoDB ObjectIds
+  adminToken = jwt.sign(
+    { id: adminUser.id, email: adminUser.email, role: adminUser.role },
+    process.env.JWT_SECRET,
+    { expiresIn: '1d' }
+  )
+
+  voterToken = jwt.sign(
+    { id: voterUser.id, email: voterUser.email, role: voterUser.role },
+    process.env.JWT_SECRET,
+    { expiresIn: '1d' }
+  )
 })
 
 afterAll(async () => {
   await prisma.nominee.deleteMany()
   await prisma.category.deleteMany()
   await prisma.campaign.deleteMany()
+  await prisma.user.deleteMany({
+    where: { email: { in: ['admin@test.com', 'voter@test.com'] } },
+  })
   await prisma.$disconnect()
 })
 
@@ -216,5 +247,114 @@ describe('PATCH /api/campaigns/:id/status', () => {
     expect(res.status).toBe(400)
     expect(res.body.success).toBe(false)
     expect(res.body.message).toBe('A closed campaign cannot be reopened')
+  })
+})
+
+describe('GET /api/campaigns/:id', () => {
+  it('should return a campaign by id publicly without token', async () => {
+    const campaign = await prisma.campaign.create({
+      data: { title: 'Get By ID Campaign', status: 'ACTIVE', coinPerVote: 1 },
+    })
+    const res = await request.get(`/api/campaigns/${campaign.id}`)
+    expect(res.status).toBe(200)
+    expect(res.body.success).toBe(true)
+    expect(res.body.data.title).toBe('Get By ID Campaign')
+    await prisma.campaign.delete({ where: { id: campaign.id } })
+  })
+
+  it('should return 404 for non-existent campaign', async () => {
+    const res = await request.get('/api/campaigns/000000000000000000000001')
+    expect(res.status).toBe(404)
+    expect(res.body.success).toBe(false)
+  })
+})
+
+describe('PATCH /api/campaigns/:id', () => {
+  let updateCampaignId
+
+  beforeAll(async () => {
+    const campaign = await prisma.campaign.create({
+      data: { title: 'Update Test Campaign', status: 'DRAFT', coinPerVote: 1 },
+    })
+    updateCampaignId = campaign.id
+  })
+
+  it('should update a DRAFT campaign', async () => {
+    const res = await request
+      .patch(`/api/campaigns/${updateCampaignId}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ title: 'Updated Campaign Title' })
+    expect(res.status).toBe(200)
+    expect(res.body.success).toBe(true)
+    expect(res.body.data.title).toBe('Updated Campaign Title')
+  })
+
+  it('should not update an ACTIVE campaign', async () => {
+    const campaign = await prisma.campaign.create({
+      data: { title: 'Active Campaign', status: 'ACTIVE', coinPerVote: 1 },
+    })
+    const res = await request
+      .patch(`/api/campaigns/${campaign.id}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ title: 'Try Update Active' })
+    expect(res.status).toBe(400)
+    expect(res.body.success).toBe(false)
+  })
+})
+
+describe('POST /api/campaigns/categories/:categoryId/nominees', () => {
+  let categoryId
+
+  beforeAll(async () => {
+    const campaign = await prisma.campaign.create({
+      data: { title: 'Nominee Test Campaign', status: 'DRAFT', coinPerVote: 1 },
+    })
+    const category = await prisma.category.create({
+      data: { campaignId: campaign.id, name: 'Best Actor' },
+    })
+    categoryId = category.id
+  })
+
+  it('should add a nominee to a category', async () => {
+    const res = await request
+      .post(`/api/campaigns/categories/${categoryId}/nominees`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ name: 'John Doe', bio: 'Actor' })
+    expect(res.status).toBe(201)
+    expect(res.body.success).toBe(true)
+    expect(res.body.data.name).toBe('John Doe')
+  })
+
+  it('should reject nominee with name less than 2 characters', async () => {
+    const res = await request
+      .post(`/api/campaigns/categories/${categoryId}/nominees`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ name: 'J' })
+    expect(res.status).toBe(400)
+    expect(res.body.success).toBe(false)
+  })
+
+  it('should reject nominee creation without token', async () => {
+    const res = await request
+      .post(`/api/campaigns/categories/${categoryId}/nominees`)
+      .send({ name: 'Jane Doe' })
+    expect(res.status).toBe(401)
+    expect(res.body.success).toBe(false)
+  })
+})
+
+describe('GET /api/campaigns/:id/categories', () => {
+  it('should return categories for a campaign publicly', async () => {
+    const campaign = await prisma.campaign.create({
+      data: { title: 'Categories Test Campaign', status: 'ACTIVE', coinPerVote: 1 },
+    })
+    await prisma.category.create({
+      data: { campaignId: campaign.id, name: 'Test Category' },
+    })
+    const res = await request.get(`/api/campaigns/${campaign.id}/categories`)
+    expect(res.status).toBe(200)
+    expect(res.body.success).toBe(true)
+    expect(res.body.data.length).toBe(1)
+    expect(res.body.data[0].name).toBe('Test Category')
   })
 })

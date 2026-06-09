@@ -1,6 +1,6 @@
-const prisma = require('../config/prisma')
+import prisma from '../config/prisma.js'
 
-async function idempotency(req, res, next) {
+export default async function idempotency(req, res, next) {
   const key = req.headers['idempotency-key']
   if (!key) return next()
 
@@ -20,5 +20,3 @@ async function idempotency(req, res, next) {
     next(err)
   }
 }
-
-module.exports = idempotency

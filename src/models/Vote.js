@@ -1,8 +1,9 @@
-cat > src/services/votingService.js
+import mongoose from 'mongoose';
+
 const voteSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: [id],
+    ref: 'User',
     required: true,
   },
   campaignId: {

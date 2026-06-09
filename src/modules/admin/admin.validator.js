@@ -1,9 +1,9 @@
-const { z } = require('zod')
+import { z } from 'zod'
 
-const campaignIdSchema = z.object({
-  id: z.string().min(1)
+export const campaignIdSchema = z.object({
+  id: z.string().min(1, 'Campaign ID is required'),
 })
 
-module.exports = {
-  campaignIdSchema,
-}
+export const exportQuerySchema = z.object({
+  campaignId: z.string().optional(),
+})

@@ -1,4 +1,4 @@
-const prisma = require('../../config/prisma')
+import prisma from '../../config/prisma.js'
 
 const ALLOWED_TRANSITIONS = {
   DRAFT: ['PUBLISHED'],
@@ -10,20 +10,24 @@ const ALLOWED_TRANSITIONS = {
 
 async function getAllCampaigns() {
   return prisma.campaign.findMany({
-    orderBy: {
-      createdAt: 'desc',
-    },
+    orderBy: { createdAt: 'desc' },
+    include: { categories: true },
+  })
+}
+
+async function getAllVotes() {
+  return prisma.vote.findMany({
+    orderBy: { createdAt: 'desc' },
     include: {
-      categories: true,
+      user: { select: { id: true, name: true, email: true } },
+      nominee: { select: { id: true, name: true } },
     },
   })
 }
 
 async function updateCampaignStatus(campaignId, nextStatus, userId) {
   const campaign = await prisma.campaign.findUnique({
-    where: {
-      id: campaignId,
-    },
+    where: { id: campaignId },
   })
 
   if (!campaign) {
@@ -32,9 +36,7 @@ async function updateCampaignStatus(campaignId, nextStatus, userId) {
     throw err
   }
 
-  const allowed =
-    ALLOWED_TRANSITIONS[campaign.status] || []
-
+  const allowed = ALLOWED_TRANSITIONS[campaign.status] || []
   if (!allowed.includes(nextStatus)) {
     const err = new Error(
       `Cannot move campaign from ${campaign.status} to ${nextStatus}`
@@ -43,15 +45,10 @@ async function updateCampaignStatus(campaignId, nextStatus, userId) {
     throw err
   }
 
-  const updatedCampaign =
-    await prisma.campaign.update({
-      where: {
-        id: campaignId,
-      },
-      data: {
-        status: nextStatus,
-      },
-    })
+  const updatedCampaign = await prisma.campaign.update({
+    where: { id: campaignId },
+    data: { status: nextStatus },
+  })
 
   await prisma.auditLog.create({
     data: {
@@ -68,42 +65,39 @@ async function updateCampaignStatus(campaignId, nextStatus, userId) {
   return updatedCampaign
 }
 
-async function publishCampaign(id, userId) {
-  return updateCampaignStatus(
-    id,
-    'PUBLISHED',
-    userId
-  )
+async function exportVotesCSV(campaignId) {
+  const votes = await prisma.vote.findMany({
+    where: campaignId ? { campaignId } : {},
+    include: {
+      user: { select: { name: true, email: true } },
+      nominee: { select: { name: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  // Build CSV string
+  const header = 'Voter Name,Voter Email,Nominee,Coins Used,Date\n'
+  const rows = votes.map((v) =>
+    `${v.user.name},${v.user.email},${v.nominee.name},${v.coinsUsed},${v.createdAt.toISOString()}`
+  ).join('\n')
+
+  return header + rows
 }
 
-async function activateCampaign(id, userId) {
-  return updateCampaignStatus(
-    id,
-    'ACTIVE',
-    userId
-  )
+export async function publishCampaign(id, userId) {
+  return updateCampaignStatus(id, 'PUBLISHED', userId)
 }
 
-async function pauseCampaign(id, userId) {
-  return updateCampaignStatus(
-    id,
-    'PAUSED',
-    userId
-  )
+export async function activateCampaign(id, userId) {
+  return updateCampaignStatus(id, 'ACTIVE', userId)
 }
 
-async function closeCampaign(id, userId) {
-  return updateCampaignStatus(
-    id,
-    'CLOSED',
-    userId
-  )
+export async function pauseCampaign(id, userId) {
+  return updateCampaignStatus(id, 'PAUSED', userId)
 }
 
-module.exports = {
-  getAllCampaigns,
-  publishCampaign,
-  activateCampaign,
-  pauseCampaign,
-  closeCampaign,
+export async function closeCampaign(id, userId) {
+  return updateCampaignStatus(id, 'CLOSED', userId)
 }
+
+export { getAllCampaigns, getAllVotes, exportVotesCSV }
