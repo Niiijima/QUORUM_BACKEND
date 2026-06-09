@@ -1,12 +1,8 @@
 {
   "dependencies": {
-    "@prisma/client": "^6.19.3",
-    "@sentry/node": "^10.56.0",
-    "argon2": "^0.44.0",
-    "axios": "^1.17.0",
     "bcrypt": "^6.0.0",
-    "bullmq": "^5.78.0",
-    "cloudinary": "^1.14.0",
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^1.21.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
@@ -20,26 +16,28 @@
     "morgan": "^1.11.0",
     "multer": "^2.1.1",
     "multer-storage-cloudinary": "^4.0.0",
-    "prisma": "^6.19.3",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1",
     "winston": "^3.19.0",
     "zod": "^4.4.3"
   },
   "scripts": {
-    "start": "node index.js",
+    "start": "node src/server.js",
     "dev": "nodemon index.js",
-    "test": "vitest run --coverage",
-    "lint": "eslint ."
+    "seed": "node scripts/seed.js",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "make-admin": "node scripts/makeAdmin.js",
+    "seed-candidates": "node scripts/seedCandidates.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@vitest/coverage-v8": "^4.1.8",
-    "eslint": "^9.39.4",
-    "globals": "^17.6.0",
+    "eslint": "^8.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
     "nodemon": "^3.1.14",
+    "prettier": "^3.0.0",
     "supertest": "^7.2.2",
     "vitest": "^4.1.8"
-  },
-  "type": "module"
+  }
 }

@@ -1,67 +1,78 @@
-import * as transactionService from '../services/transactionService.js';
-import prisma from '../lib/prisma.js';
+const mongoose = require('mongoose');
+const User = require('../models/User');
+const Candidate = require('../models/Candidate');
 
-export const castVote = async (req, res) => {
-    try {
-        const { campaignId, nomineeId, amount } = req.body;
 
-        // Basic validation
-        if (!campaignId || !nomineeId || typeof amount !== 'number' || amount <= 0) {
-            return res.status(400).json({ error: "Invalid vote data provided" });
-        }
+const castVote = async (req, res) => {
+  const { candidateId } = req.body;
 
-        const result = await transactionService.processVoteTransaction(
-            req.user.userId,
-            amount,
-            campaignId,
-            nomineeId
-        );
-        
-        return res.status(201).json(result);
-    } catch (error) {
-        return res.status(400).json({ error: error.message });
+  
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    
+    const user = await User.findById(req.user.id).session(session);
+    
+    
+    const candidate = await Candidate.findById(candidateId).session(session);
+
+    if (!candidate) {
+      throw new Error('Candidate not found');
     }
+
+    
+    if (user.walletBalance < 1) {
+      throw new Error('Insufficient wallet balance to cast a vote');
+    }
+
+    
+    user.walletBalance -= 1;
+    candidate.votesReceived += 1;
+
+    
+    await user.save();
+    await candidate.save();
+
+    
+    await session.commitTransaction();
+    session.endSession();
+
+    res.status(200).json({ 
+      message: 'Vote cast successfully!', 
+      newBalance: user.walletBalance,
+      candidate: candidate.name
+    });
+
+  } catch (error) {
+    
+    await session.abortTransaction();
+    session.endSession();
+    res.status(400).json({ message: error.message });
+  }
 };
 
-export const getBalance = async (req, res) => {
-    try {
-        const wallet = await prisma.wallet.findUnique({ 
-            where: { userId: req.user.userId } 
-        });
-        
-        return res.json({ balance: wallet?.balance || 0 });
-    } catch (error) {
-        return res.status(500).json({ error: "Internal server error" });
-    }
+
+const getCandidates = async (req, res) => {
+  try {
+    const candidates = await Candidate.find().sort({ name: 1 });
+    res.status(200).json(candidates);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
-export const getUserVotes = async (req, res) => {
-    try {
-        const votes = await prisma.vote.findMany({ 
-            where: { userId: req.user.userId },
-            orderBy: { createdAt: 'desc' } // Best practice: show latest votes first
-        });
-        
-        return res.json(votes);
-    } catch (error) {
-        return res.status(500).json({ error: "Internal server error" });
-    }
+
+const getResults = async (req, res) => {
+  try {
+    
+    const results = await Candidate.find().sort({ votesReceived: -1 });
+    res.status(200).json(results);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
-export const getCampaignResults = async (req, res) => {
-    try {
-        const { campaignId } = req.params;
-        
-        if (!campaignId) return res.status(400).json({ error: "Campaign ID is required" });
 
-        const results = await prisma.vote.groupBy({
-            by: ['nomineeId'],
-            where: { campaignId },
-            _count: { nomineeId: true }
-        });
-        
-        return res.json(results);
-    } catch (error) {
-        return res.status(500).json({ error: "Internal server error" });
-    }
-};
+module.exports = { castVote, getCandidates, getResults };
+

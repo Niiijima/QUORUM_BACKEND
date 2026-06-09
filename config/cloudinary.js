@@ -1,7 +1,4 @@
-// config/cloudinary.js
-import { v2 as cloudinary } from 'cloudinary';
-
-console.log ("Initializing Cloudinary with environment variables...");
+const cloudinary = require('cloudinary').v2;
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -9,5 +6,4 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-
-export default cloudinary;
+module.exports = cloudinary;
