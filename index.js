@@ -61,27 +61,8 @@ app.use('/api/votes', voteRoutes);
 app.use('/api/auth', authRoutes);
 
 const swaggerUi = require('swagger-ui-express');
-const swaggerJsdoc = require('swagger-jsdoc');
-const swaggerOptions = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Quorum Backend API Documentation',
-      version: '1.0.0',
-      description: 'API Documentation for the Quorum full-stack architecture application',
-    },
-    servers: [
-      {
-        url: 'http://localhost:2000',
-        description: 'Local Development Server',
-      },
-    ],
-  },
-  apis: ['./index.js', './src/routes/*.js'], 
-};
-
-const swaggerDocs = swaggerJsdoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+const swaggerDocument = require('./swagger.json'); 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 
 app.post("/api/test-upload", (req, res) => {

@@ -1,0 +1,104 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Quorum Backend API Documentation",
+    "version": "1.0.0",
+    "description": "API Documentation for the Quorum full-stack architecture application"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:2000",
+      "description": "Local Development Server"
+    }
+  ],
+  "paths": {
+    "/api/users": {
+      "get": {
+        "summary": "Retrieve all registered users",
+        "responses": {
+          "200": { "description": "A list of users." }
+        }
+      },
+      "post": {
+        "summary": "Create a new user profile",
+        "responses": {
+          "201": { "description": "User created successfully." }
+        }
+      },
+      "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+    },
+    "/api/campaigns": {
+      "get": {
+        "summary": "Get all active campaigns with creator details",
+        "responses": {
+          "200": { "description": "Success" }
+        }
+      }
+    },
+    "/api/votes/results": {
+      "get": {
+        "summary": "Retrieve the current voting results",
+        "description": "Fetches a list of all candidates sorted by the number of votes received.",
+        "tags": ["Votes"],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": { "type": "string", "example": "Jane Doe" },
+                      "votesReceived": { "type": "integer", "example": 42 }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": { "description": "Internal server error" }
+        }
+      }
+    },"/api/votes": {
+      "post": {
+        "summary": "Cast a secure vote",
+        "description": "Requires a valid JWT token. Records a vote for a specific candidate.",
+        "tags": ["Votes"],
+        "security": [
+          { "bearerAuth": [] }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "candidateId": { 
+                    "type": "string", 
+                    "example": "60d5ec49f1b2c8b1f8e4e1a2" 
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Vote successfully cast" },
+          "401": { "description": "Unauthorized - Missing or invalid JWT token" },
+          "403": { "description": "Forbidden - User has already voted" }
+        }
+      }
+    }
+  }
+}

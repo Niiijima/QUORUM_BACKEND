@@ -2,15 +2,6 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 
-/**
- * @openapi
- * /api/users:
- * post:
- * summary: Create a new user profile
- * responses:
- * 201:
- * description: User created successfully.
- */
 router.post('/', async (req, res) => {
   try {
     const { username, email } = req.body;
@@ -30,15 +21,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-/**
- * @openapi
- * /api/users:
- * get:
- * summary: Retrieve all registered users
- * responses:
- * 200:
- * description: A list of users.
- */
+
 router.get('/', async (req, res) => {
   try {
     const users = await User.find().select('-__v'); // Exclude internal mongoose version key
