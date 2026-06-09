@@ -1,6 +1,6 @@
 import prisma from './prisma.js'
 
-async function connectDB() {
+export default async function connectDB() {
   try {
     await prisma.$connect()
     console.log('MongoDB connected via Prisma')
@@ -9,5 +9,3 @@ async function connectDB() {
     process.exit(1)
   }
 }
-
-export default connectDB

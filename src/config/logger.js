@@ -1,7 +1,6 @@
 import winston from 'winston'
 import { existsSync, mkdirSync } from 'fs'
 
-// Make sure logs directory exists
 if (!existsSync('logs')) {
   mkdirSync('logs')
 }
