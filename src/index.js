@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import voteRoutes from './routes/votes.js';
 import walletRoutes from './routes/wallet.js';
+import authRoutes from './routes/auth.js';
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use(helmet());
 
 // Routes
+app.use('/auth', authRoutes);
 app.use('/api/votes', voteRoutes);
 app.use('/api/wallet', walletRoutes);
 
@@ -24,6 +26,7 @@ app.get('/health', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
+  console.log(`📌 Auth API: http://localhost:${PORT}/auth`);
   console.log(`📌 Voting API: http://localhost:${PORT}/api/votes`);
   console.log(`📌 Wallet API: http://localhost:${PORT}/api/wallet`);
 });
