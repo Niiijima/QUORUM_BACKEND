@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../app.js';
+import app from '../server.js';
 
 describe('Health Endpoint', () => {
   it('should return 200 and status ok', async () => {
