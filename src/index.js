@@ -25,8 +25,8 @@ app.get('/health', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
-  console.log(`📌 Auth API: http://localhost:${PORT}/auth`);
-  console.log(`📌 Voting API: http://localhost:${PORT}/api/votes`);
-  console.log(`📌 Wallet API: http://localhost:${PORT}/api/wallet`);
+  console.log(` Server running on port ${PORT}`);
+  console.log(` Auth API: http://localhost:${PORT}/auth`);
+  console.log(` Voting API: http://localhost:${PORT}/api/votes`);
+  console.log(` Wallet API: http://localhost:${PORT}/api/wallet`);
 });
