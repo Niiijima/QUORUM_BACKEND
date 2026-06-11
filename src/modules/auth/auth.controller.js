@@ -1,29 +1,28 @@
-import * as authService from './auth.service.js';
+import prisma from '../../lib/prisma.js';
+import bcrypt from 'bcrypt';
 
-export async function login(req, res, next) {
-    try {
-        const { email, password } = req.body;
-        // Call your service to verify credentials and generate a token
-        const result = await authService.login(email, password);
-        
-        res.status(200).json({
-            success: true,
-            data: result // Usually contains the token and user info
-        });
-    } catch (err) {
-        next(err);
-    }
-}
+export async function register(userData) {
+    const { name, email, password } = userData;
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-export async function register(req, res, next) {
-    try {
-        const userData = req.body;
-        const newUser = await authService.register(userData);
-        res.status(201).json({
-            success: true,
-            data: newUser
-        });
-    } catch (err) {
-        next(err);
-    }
+    // 1. Create the user first
+    const user = await prisma.user.create({
+        data: {
+            name,
+            email,
+            password: hashedPassword,
+            role: "VOTER"
+        }
+    });
+
+    // 2. Create the wallet associated with the new user's ID
+    const wallet = await prisma.wallet.create({
+        data: {
+            userId: user.id,
+            balance: 0
+        }
+    });
+
+    // Return the combined object (or just the user, depending on your needs)
+    return { ...user, wallet };
 }
