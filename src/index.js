@@ -30,7 +30,7 @@ app.use(cors({ origin: env.CLIENT_URL || '*' }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
-app.use(defaultLimiter);
+//app.use(defaultLimiter);
 
 // Health checks (put BEFORE routes)
 app.get('/health', (req, res) => {
