@@ -8,7 +8,7 @@ import helmet from 'helmet';
 import connectDB from './config/db.js';
 import env from './config/env.js';
 import errorHandler from './middleware/error.js';
-import { defaultLimiter } from './middleware/rateLimit.js';
+//import { defaultLimiter } from './middleware/rateLimit.js';
 import { requestLogger } from './config/logger.js';
 
 // Routes
