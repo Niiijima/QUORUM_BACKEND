@@ -1,9 +1,10 @@
+// src/index.js
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 
-// Config & Middleware
+// Config
 import connectDB from './config/db.js';
 import env from './config/env.js';
 import errorHandler from './middleware/error.js';
@@ -18,12 +19,12 @@ import voteRoutes from './routes/votes.js';
 import walletRoutes from './routes/wallet.js';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 2000;
 
-// 1. Database connection
+// Database
 connectDB();
 
-// 2. Middleware
+// Middleware
 app.use(helmet());
 app.use(cors({ origin: env.CLIENT_URL || '*' }));
 app.use(express.json());
@@ -31,32 +32,39 @@ app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
 app.use(defaultLimiter);
 
-// 3. Health check
+// Health checks (put BEFORE routes)
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ success: true, status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// 4. Route mounting
+app.get('/', (req, res) => {
+  res.json({ success: true, message: 'Quorum Backend is running' });
+});
+
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/campaigns', campaignRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/votes', voteRoutes);
 app.use('/api/wallet', walletRoutes);
 
-// 5. 404 handler
+// 404 Handler - MUST be after all routes
 app.use((req, res) => {
-  res.status(404).json({ success: false, message: 'Route not found' });
+  res.status(404).json({ 
+    success: false, 
+    message: 'Route not found',
+    path: req.path 
+  });
 });
 
-// 6. Error handling (Must be last)
+// Global Error Handler
 app.use(errorHandler);
 
-// 7. Start Server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(` Server running on port ${PORT}`);
-  console.log(` Auth API: http://localhost:${PORT}/api/auth`);
+  console.log(` Health: http://localhost:${PORT}/health`);
+  console.log(` Auth: http://localhost:${PORT}/api/auth/login`);
   console.log(` Campaigns: http://localhost:${PORT}/api/campaigns`);
-  console.log(` Admin: http://localhost:${PORT}/api/admin`);
-  console.log(` Votes: http://localhost:${PORT}/api/votes`);
-  console.log(` Wallet: http://localhost:${PORT}/api/wallet`);
 });
+
+export default app;
