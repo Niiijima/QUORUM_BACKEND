@@ -5,11 +5,12 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "postinstall": "prisma generate",
-    "build": "prisma generate"
+    "build": "npx prisma generate",
+    "postinstall": "npx prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "prisma": "^6.19.3",
     "argon2": "^0.44.0",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.10.0",
@@ -28,12 +29,5 @@
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1",
     "zod": "^4.4.3"
-  },
-  "devDependencies": {
-    "@vitest/coverage-v8": "^4.1.8",
-    "nodemon": "^3.1.14",
-    "prisma": "^6.19.3",
-    "supertest": "^7.2.2",
-    "vitest": "^4.1.8"
   }
 }
