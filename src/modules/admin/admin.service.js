@@ -1,4 +1,4 @@
-const prisma = require('../../config/prisma')
+import prisma from './src/lib/prisma.js';
 
 const ALLOWED_TRANSITIONS = {
   DRAFT: ['PUBLISHED'],
@@ -6,9 +6,9 @@ const ALLOWED_TRANSITIONS = {
   ACTIVE: ['PAUSED', 'CLOSED'],
   PAUSED: ['ACTIVE', 'CLOSED'],
   CLOSED: [],
-}
+};
 
-async function getAllCampaigns() {
+export async function getAllCampaigns() {
   return prisma.campaign.findMany({
     orderBy: {
       createdAt: 'desc',
@@ -16,7 +16,7 @@ async function getAllCampaigns() {
     include: {
       categories: true,
     },
-  })
+  });
 }
 
 async function updateCampaignStatus(campaignId, nextStatus, userId) {
@@ -24,34 +24,32 @@ async function updateCampaignStatus(campaignId, nextStatus, userId) {
     where: {
       id: campaignId,
     },
-  })
+  });
 
   if (!campaign) {
-    const err = new Error('Campaign not found')
-    err.status = 404
-    throw err
+    const err = new Error('Campaign not found');
+    err.status = 404;
+    throw err;
   }
 
-  const allowed =
-    ALLOWED_TRANSITIONS[campaign.status] || []
+  const allowed = ALLOWED_TRANSITIONS[campaign.status] || [];
 
   if (!allowed.includes(nextStatus)) {
     const err = new Error(
       `Cannot move campaign from ${campaign.status} to ${nextStatus}`
-    )
-    err.status = 400
-    throw err
+    );
+    err.status = 400;
+    throw err;
   }
 
-  const updatedCampaign =
-    await prisma.campaign.update({
-      where: {
-        id: campaignId,
-      },
-      data: {
-        status: nextStatus,
-      },
-    })
+  const updatedCampaign = await prisma.campaign.update({
+    where: {
+      id: campaignId,
+    },
+    data: {
+      status: nextStatus,
+    },
+  });
 
   await prisma.auditLog.create({
     data: {
@@ -63,47 +61,23 @@ async function updateCampaignStatus(campaignId, nextStatus, userId) {
         newStatus: nextStatus,
       },
     },
-  })
+  });
 
-  return updatedCampaign
+  return updatedCampaign;
 }
 
-async function publishCampaign(id, userId) {
-  return updateCampaignStatus(
-    id,
-    'PUBLISHED',
-    userId
-  )
+export async function publishCampaign(id, userId) {
+  return updateCampaignStatus(id, 'PUBLISHED', userId);
 }
 
-async function activateCampaign(id, userId) {
-  return updateCampaignStatus(
-    id,
-    'ACTIVE',
-    userId
-  )
+export async function activateCampaign(id, userId) {
+  return updateCampaignStatus(id, 'ACTIVE', userId);
 }
 
-async function pauseCampaign(id, userId) {
-  return updateCampaignStatus(
-    id,
-    'PAUSED',
-    userId
-  )
+export async function pauseCampaign(id, userId) {
+  return updateCampaignStatus(id, 'PAUSED', userId);
 }
 
-async function closeCampaign(id, userId) {
-  return updateCampaignStatus(
-    id,
-    'CLOSED',
-    userId
-  )
-}
-
-module.exports = {
-  getAllCampaigns,
-  publishCampaign,
-  activateCampaign,
-  pauseCampaign,
-  closeCampaign,
+export async function closeCampaign(id, userId) {
+  return updateCampaignStatus(id, 'CLOSED', userId);
 }
