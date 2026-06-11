@@ -1,55 +1,80 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import request from 'supertest';
+import { describe, it, before, after } from 'node:test';
+import assert from 'node:assert';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 describe('Voting Logic Tests', () => {
-  let authToken;
-  let userId;
-  let walletId;
-  
-  beforeAll(async () => {
+  let userId, walletId, campaignId;
+
+  before(async () => {
+    // Clean up
     await prisma.vote.deleteMany();
     await prisma.transaction.deleteMany();
     await prisma.wallet.deleteMany();
     await prisma.user.deleteMany();
     
+    // Create test user
     const user = await prisma.user.create({
       data: {
-        email: 'test@example.com',
-        password: 'hashedpassword',
-        name: 'Test User'
+        email: 'voter@test.com',
+        password: 'hashed',
+        name: 'Voter'
       }
     });
-    
     userId = user.id;
     
+    // Create wallet with 1 coin
     const wallet = await prisma.wallet.create({
       data: {
+        userId: userId,
+        balance: 1
+      }
+    });
+    walletId = wallet.id;
+    
+    campaignId = 'campaign_test_1';
+  });
+
+  after(async () => {
+    await prisma.$disconnect();
+  });
+
+  it('should create a vote successfully', async () => {
+    const vote = await prisma.vote.create({
+      data: {
         userId,
-        balance: 10
+        campaignId,
+        nomineeId: 'nominee_1'
       }
     });
     
-    walletId = wallet.id;
+    assert.ok(vote.id);
+    assert.strictEqual(vote.userId, userId);
+    assert.strictEqual(vote.campaignId, campaignId);
   });
-  
-  afterAll(async () => {
-    await prisma.$disconnect();
-  });
-  
-  it('should successfully cast a vote', async () => {
-    // This would test the voting endpoint
-    expect(true).toBe(true);
-  });
-  
+
   it('should prevent duplicate votes', async () => {
-    // Test duplicate vote prevention
-    expect(true).toBe(true);
+    try {
+      await prisma.vote.create({
+        data: {
+          userId,
+          campaignId,
+          nomineeId: 'nominee_2'
+        }
+      });
+      assert.fail('Should have thrown duplicate key error');
+    } catch (error) {
+      assert.ok(error.code === 'P2002');
+    }
   });
-  
-  it('should handle insufficient balance', async () => {
-    expect(true).toBe(true);
+
+  it('should get user votes', async () => {
+    const votes = await prisma.vote.findMany({
+      where: { userId }
+    });
+    
+    assert.strictEqual(votes.length, 1);
+    assert.strictEqual(votes[0].nomineeId, 'nominee_1');
   });
 });

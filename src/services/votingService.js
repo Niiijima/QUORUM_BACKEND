@@ -1,4 +1,4 @@
-import prisma from '../../lib/prisma.js';
+import prisma from "../lib/prisma.js";
 
 class VotingService {
   async castVote({ userId, campaignId, nomineeId, walletId, req = null }) {
