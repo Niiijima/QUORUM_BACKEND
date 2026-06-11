@@ -1,35 +1,69 @@
-import prisma from '../../lib/prisma.js';
+// src/modules/auth/auth.service.js
+import User from '../../models/User.js'; // adjust path if needed
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
-export async function register(userData) {
-    const { name, email, password } = userData;
-    const hashedPassword = await bcrypt.hash(password, 10);
+export const register = async (userData) => {
+  const { name, email, password, ...rest } = userData;
 
-    // 1. Create the user first
-    const user = await prisma.user.create({
-        data: { 
-            name, 
-            email, 
-            password: hashedPassword, 
-            role: "VOTER" 
-        }
-    });
+  // Check if user exists
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    throw new Error('User already exists');
+  }
 
-    try {
-        // 2. Create the wallet separately
-        const wallet = await prisma.wallet.create({
-            data: { 
-                userId: user.id, 
-                balance: 0,
-                isLocked: false 
-            }
-        });
-        
-        return { ...user, wallet };
-    } catch (error) {
-        // 3. Rollback: If wallet creation fails, delete the user 
-        // to prevent an orphan record without a wallet.
-        await prisma.user.delete({ where: { id: user.id } });
-        throw new Error("Registration failed: Could not initialize user wallet.");
-    }
-}
+  // Hash password
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+
+  // Create user
+  const newUser = await User.create({
+    name,
+    email,
+    password: hashedPassword,
+    ...rest
+  });
+
+  // Generate token
+  const token = jwt.sign(
+    { id: newUser._id, email: newUser.email },
+    process.env.JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+
+  return {
+    user: {
+      id: newUser._id,
+      name: newUser.name,
+      email: newUser.email
+    },
+    token
+  };
+};
+
+export const login = async (email, password) => {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new Error('Invalid credentials');
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    throw new Error('Invalid credentials');
+  }
+
+  const token = jwt.sign(
+    { id: user._id, email: user.email },
+    process.env.JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+
+  return {
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email
+    },
+    token
+  };
+};
