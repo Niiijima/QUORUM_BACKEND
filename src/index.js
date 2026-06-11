@@ -42,6 +42,7 @@ app.get('/', (req, res) => {
 });
 
 // Routes
+console.log("Auth Routes Module:", authRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/campaigns', campaignRoutes);
 app.use('/api/admin', adminRoutes);
