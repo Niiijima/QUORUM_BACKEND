@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { authMiddleware, authorize } from '../../middleware/auth.js';
+import { protect, authorize } from '../../middleware/auth.js';
 import * as controller from './admin.controller.js';
 
 const router = Router();
 
 
-router.use(authMiddleware);
+router.use(protect);
 router.use(authorize('ADMIN'));
 
 // Admin endpoints

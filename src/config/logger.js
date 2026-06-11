@@ -1,3 +1,5 @@
-const morgan = require('morgan')
-const requestLogger = morgan('dev')
-module.exports = { requestLogger }
+import morgan from 'morgan';
+
+const requestLogger = morgan('dev');
+
+export { requestLogger };

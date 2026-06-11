@@ -1,13 +1,12 @@
-const prisma = require('./prisma')
-
+import prisma from '../lib/prisma.js';
 async function connectDB() {
   try {
-    await prisma.$connect()
-    console.log('MongoDB connected via Prisma')
+    await prisma.$connect();
+    console.log('MongoDB connected via Prisma');
   } catch (error) {
-    console.error('Database connection failed:', error.message)
-    process.exit(1)
+    console.error('Database connection failed:', error.message);
+    process.exit(1);
   }
 }
 
-module.exports = connectDB
+export default connectDB;
