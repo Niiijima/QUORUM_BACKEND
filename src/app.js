@@ -10,7 +10,8 @@ import { defaultLimiter } from './middleware/rateLimit.js';
 import { requestLogger } from './config/logger.js';
 
 // Routes
-import authRoutes from './modules/admin/admin.routes.js';
+
+import authRoutes from './modules/auth/auth.routes.js'; 
 import campaignRoutes from './modules/campaigns/campaigns.routes.js';
 import adminRoutes from './modules/admin/admin.routes.js';
 
@@ -32,9 +33,9 @@ app.get('/health', (req, res) => {
 });
 
 // Route mounting
-app.use('/auth', authRoutes);
-app.use('/api/campaigns', campaignRoutes);
-app.use('/api/admin', adminRoutes);
+app.use('/api/auth', authRoutes);           
+app.use('/api/campaigns', campaignRoutes);  
+app.use('/api/admin', adminRoutes);     
 
 // 404 handler
 app.use((req, res) => {
