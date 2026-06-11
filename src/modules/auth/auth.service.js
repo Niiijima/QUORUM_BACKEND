@@ -1,21 +1,24 @@
+import prisma from '../../lib/prisma.js';
+import bcrypt from 'bcrypt';
 export async function register(userData) {
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
-    
-    // 1. Create the user as an independent operation
-    const user = await prisma.user.create({
-        data: { 
-            name: userData.name,
-            email: userData.email,
-            password: hashedPassword 
-        }
-    });
+    const { name, email, password } = userData;
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    await prisma.wallet.create({
-        data: {
-            userId: user.id, 
-            balance: 0
-        }
-    });
+    // Use a transaction to ensure both operations succeed or neither do
+    return await prisma.$transaction(async (tx) => {
+        // 1. Create the user
+        const user = await tx.user.create({
+            data: { name, email, password: hashedPassword, role: "VOTER" }
+        });
 
-    return user;
+        // 2. Create the wallet linked to that user
+        const wallet = await tx.wallet.create({
+            data: { 
+                userId: user.id, 
+                balance: 0 
+            }
+        });
+
+        return { ...user, wallet }; // Return both if needed
+    });
 }
