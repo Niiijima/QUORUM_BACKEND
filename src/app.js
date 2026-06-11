@@ -1,35 +1,48 @@
-require('dotenv').config()
-const express = require('express')
-const cors = require('cors')
-const connectDB = require('./config/db')
-const env = require('./config/env')
-const errorHandler = require('./middleware/error')
-const { defaultLimiter } = require('./middleware/rateLimit')
-const { requestLogger } = require('./config/logger')
-const campaignRoutes = require('./modules/campaigns/campaigns.routes')
-const adminRoutes = require('./modules/admin/admin.routes')
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
 
-const app = express()
+// Imports
+import connectDB from './config/db.js';
+import env from './config/env.js';
+import errorHandler from './middleware/error.js';
+import { defaultLimiter } from './middleware/rateLimit.js';
+import { requestLogger } from './config/logger.js';
 
-connectDB()
+// Routes
 
-app.use(cors({ origin: env.CLIENT_URL }))
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
-app.use(requestLogger)
-app.use(defaultLimiter)
+import authRoutes from './modules/auth/auth.routes.js'; 
+import campaignRoutes from './modules/campaigns/campaigns.routes.js';
+import adminRoutes from './modules/admin/admin.routes.js';
 
+const app = express();
+
+// Database connection
+connectDB();
+
+// Middleware
+app.use(cors({ origin: env.CLIENT_URL }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(requestLogger);
+app.use(defaultLimiter);
+
+// Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() })
-})
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
-app.use('/api/campaigns', campaignRoutes)
-app.use('/api/admin', adminRoutes)
+// Route mounting
+app.use('/api/auth', authRoutes);           
+app.use('/api/campaigns', campaignRoutes);  
+app.use('/api/admin', adminRoutes);     
 
+// 404 handler
 app.use((req, res) => {
-  res.status(404).json({ success: false, message: 'Route not found' })
-})
+  res.status(404).json({ success: false, message: 'Route not found' });
+});
 
-app.use(errorHandler)
+// Error handling
+app.use(errorHandler);
 
-module.exports = app
+export default app;
