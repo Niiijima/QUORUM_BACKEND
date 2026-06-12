@@ -1,69 +1,32 @@
-// src/modules/auth/auth.service.js
-import User from '../../models/User.js'; // adjust path if needed
+import User from '../../models/User.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
+// Utility to create the token
+const generateToken = (id, email) => {
+  return jwt.sign({ id, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+};
+
 export const register = async (userData) => {
-  const { name, email, password, ...rest } = userData;
-
-  // Check if user exists
+  const { name, email, password } = userData;
   const existingUser = await User.findOne({ email });
-  if (existingUser) {
-    throw new Error('User already exists');
-  }
+  if (existingUser) throw new Error('User already exists');
 
-  // Hash password
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newUser = await User.create({ name, email, password: hashedPassword });
 
-  // Create user
-  const newUser = await User.create({
-    name,
-    email,
-    password: hashedPassword,
-    ...rest
-  });
-
-  // Generate token
-  const token = jwt.sign(
-    { id: newUser._id, email: newUser.email },
-    process.env.JWT_SECRET,
-    { expiresIn: '7d' }
-  );
-
-  return {
-    user: {
-      id: newUser._id,
-      name: newUser.name,
-      email: newUser.email
-    },
-    token
-  };
+  return { id: newUser._id, name: newUser.name, email: newUser.email };
 };
 
 export const login = async (email, password) => {
   const user = await User.findOne({ email });
-  if (!user) {
+  if (!user || !(await bcrypt.compare(password, user.password))) {
     throw new Error('Invalid credentials');
   }
 
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) {
-    throw new Error('Invalid credentials');
-  }
-
-  const token = jwt.sign(
-    { id: user._id, email: user.email },
-    process.env.JWT_SECRET,
-    { expiresIn: '7d' }
-  );
-
+  const token = generateToken(user._id, user.email);
   return {
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email
-    },
-    token
+    user: { id: user._id, name: user.name, email: user.email },
+    token // The token is returned to the controller to be set as a cookie
   };
 };

@@ -1,22 +1,20 @@
-import prisma from '../lib/prisma.js';
+import User from '../../models/User.js';
 
 // getMyProfile
 export const getMyProfile = async (req, res) => {
     try {
-        const user = await prisma.user.findUnique({
-            where: { id: req.user.userId },
-            include: { wallet: true }
-        });
+        // Find user by ID, excluding the password field for security
+        const user = await User.findById(req.user.id).select('-password');
 
         if (!user) return res.status(404).json({ message: "User not found" });
 
         res.json({
             success: true,
             user: {
-                id: user.id,
-                name: user.name,
+                id: user._id,
+                name: user.username, // Match your schema field
                 email: user.email,
-                walletBalance: user.wallet?.balance || 0
+                walletBalance: user.walletBalance || 0 // Accessed directly from the User document
             }
         });
     } catch (error) {
@@ -26,19 +24,16 @@ export const getMyProfile = async (req, res) => {
 
 export const deleteAccount = async (req, res) => {
     try {
-        // Use a transaction to ensure both are deleted or neither is
-        await prisma.$transaction([
-            prisma.wallet.deleteMany({ where: { userId: req.user.userId } }),
-            prisma.user.delete({ where: { id: req.user.userId } })
-        ]);
+        // Since we moved the wallet data INTO the user document, 
+        // we only need to delete the user document. 
+        // No transaction required!
+        const deletedUser = await User.findByIdAndDelete(req.user.id);
+        
+        if (!deletedUser) return res.status(404).json({ message: "User not found" });
+
         res.json({ success: true, message: "Account deleted successfully" });
     } catch (error) {
         console.error("Delete Error:", error);
         res.status(500).json({ message: "Error deleting account" });
     }
-};
-
-// Placeholder for deleteUser 
-export const deleteUser = async (req, res) => {
-    res.status(501).json({ message: "Not implemented yet" });
 };

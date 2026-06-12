@@ -1,17 +1,17 @@
 import * as transactionService from '../services/transactionService.js';
-import prisma from '../lib/prisma.js';
+import User from '../models/User.js';
+import Vote from '../models/Vote.js';
 
 export const castVote = async (req, res) => {
     try {
         const { campaignId, nomineeId, amount } = req.body;
 
-        // Basic validation
         if (!campaignId || !nomineeId || typeof amount !== 'number' || amount <= 0) {
             return res.status(400).json({ error: "Invalid vote data provided" });
         }
 
         const result = await transactionService.processVoteTransaction(
-            req.user.userId,
+            req.user.id, // Ensure this matches your middleware's user object
             amount,
             campaignId,
             nomineeId
@@ -25,11 +25,8 @@ export const castVote = async (req, res) => {
 
 export const getBalance = async (req, res) => {
     try {
-        const wallet = await prisma.wallet.findUnique({ 
-            where: { userId: req.user.userId } 
-        });
-        
-        return res.json({ balance: wallet?.balance || 0 });
+        const user = await User.findById(req.user.id).select('walletBalance');
+        return res.json({ balance: user?.walletBalance || 0 });
     } catch (error) {
         return res.status(500).json({ error: "Internal server error" });
     }
@@ -37,11 +34,8 @@ export const getBalance = async (req, res) => {
 
 export const getUserVotes = async (req, res) => {
     try {
-        const votes = await prisma.vote.findMany({ 
-            where: { userId: req.user.userId },
-            orderBy: { createdAt: 'desc' } // Best practice: show latest votes first
-        });
-        
+        const votes = await Vote.find({ userId: req.user.id })
+            .sort({ createdAt: -1 });
         return res.json(votes);
     } catch (error) {
         return res.status(500).json({ error: "Internal server error" });
@@ -54,11 +48,11 @@ export const getCampaignResults = async (req, res) => {
         
         if (!campaignId) return res.status(400).json({ error: "Campaign ID is required" });
 
-        const results = await prisma.vote.groupBy({
-            by: ['nomineeId'],
-            where: { campaignId },
-            _count: { nomineeId: true }
-        });
+        // Mongoose equivalent of groupBy
+        const results = await Vote.aggregate([
+            { $match: { campaignId: new mongoose.Types.ObjectId(campaignId) } },
+            { $group: { _id: "$nomineeId", count: { $sum: 1 } } }
+        ]);
         
         return res.json(results);
     } catch (error) {

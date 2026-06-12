@@ -1,50 +1,27 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import prisma from '../lib/prisma.js';
+import User from '../../models/User.js'; // Ensure the path is correct
+import { register as registerService } from '../auth/auth.service.js';
 
 export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Atomic registration: User + Wallet created in one operation
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        role: "VOTER",
-        wallet: { 
-          create: { balance: 0 } 
-        }
-      },
-      include: { wallet: true }
-    });
+    // Call the service we defined earlier
+    const result = await registerService({ name, email, password });
 
-    // Remove password from the object before sending back to client
-    const { password: _, ...userWithoutPassword } = user;
-
-    // Generate JWT Token
-    const token = jwt.sign(
-      { userId: user.id, role: user.role }, 
-      process.env.JWT_SECRET, 
-      { expiresIn: '7d' }
-    );
-
-    res.status(201).json({ 
-      success: true, 
-      user: userWithoutPassword, 
-      token 
+    res.status(201).json({
+      success: true,
+      user: result.user,
+      token: result.token
     });
 
   } catch (error) {
-    // Handle duplicate email (Prisma unique constraint violation)
-    if (error.code === 'P2002') {
+    // Check for Mongoose duplicate key error (code 11000)
+    if (error.code === 11000) {
       return res.status(409).json({ message: "Email already exists" });
     }
-    
+
     console.error("Registration Error:", error);
     res.status(500).json({ message: "Registration failed", error: error.message });
   }

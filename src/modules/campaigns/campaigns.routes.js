@@ -21,39 +21,39 @@ router.get('/:id', controller.getCampaign);
 
 router.use(protect); 
 
-router.get('/', authorize('ADMIN', 'ORGANIZER'), controller.listCampaigns);
+router.get('/', authorize('admin', 'organizer'), controller.listCampaigns);
 
 router.post(
   '/',
-  authorize('ADMIN', 'ORGANIZER'),
+  authorize('admin', 'organizer'),
   validate(createCampaignSchema),
   controller.createCampaign
 );
 
 router.patch(
   '/:id',
-  authorize('ADMIN', 'ORGANIZER'),
+  authorize('admin', 'organizer'),
   validate(updateCampaignSchema),
   controller.updateCampaign
 );
 
 router.patch(
   '/:id/status',
-  authorize('ADMIN', 'ORGANIZER'),
+  authorize('admin', 'organizer'),
   validate(updateStatusSchema),
   controller.changeCampaignStatus
 );
 
 router.post(
   '/:id/categories',
-  authorize('ADMIN', 'ORGANIZER'),
+  authorize('admin', 'organizer'),
   validate(createCategorySchema),
   controller.addCategory
 );
 
 router.post(
   '/categories/:categoryId/nominees',
-  authorize('ADMIN', 'ORGANIZER'),
+  authorize('admin', 'organizer'),
   validate(createNomineeSchema),
   controller.addNominee
 );

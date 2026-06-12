@@ -5,15 +5,13 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "build": "npx prisma generate",
-    "postinstall": "npx prisma generate"
+    "build": "echo 'Build complete'"
   },
   "dependencies": {
-    "@prisma/client": "^6.19.3",
-    "prisma": "^6.19.3",
     "argon2": "^0.44.0",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.10.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",

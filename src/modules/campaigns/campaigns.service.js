@@ -1,4 +1,4 @@
-import prisma from '../../config/prisma.js'; // Ensure the path and .js extension are correct
+import prisma from '../../models/Campaign.js'; // Ensure the path and .js extension are correct
 
 export async function createCampaign(data) {
   return prisma.campaign.create({

@@ -1,129 +1,62 @@
-import prisma from "../lib/prisma.js";
+import User from '../models/User.js';
+import Vote from '../models/Vote.js';
+import Transaction from '../models/Transaction.js';
 
 class VotingService {
-  async castVote({ userId, campaignId, nomineeId, walletId, req = null }) {
-    let retries = 3;
-    
-    while (retries > 0) {
-      try {
-        const existingVote = await prisma.vote.findFirst({
-          where: {
-            userId: userId,
-            campaignId: campaignId
-          }
-        });
-        
-        if (existingVote) {
-          throw new Error('ALREADY_VOTED');
-        }
-        
-        const wallet = await prisma.wallet.findUnique({
-          where: { id: walletId }
-        });
-        
-        if (!wallet) {
-          throw new Error('WALLET_NOT_FOUND');
-        }
-        
-        if (wallet.balance < 1) {
-          throw new Error('INSUFFICIENT_BALANCE');
-        }
-        
-        const updatedWallet = await prisma.wallet.update({
-          where: { id: walletId },
-          data: { balance: wallet.balance - 1 }
-        });
-        
-        const vote = await prisma.vote.create({
-          data: {
-            userId,
-            campaignId,
-            nomineeId
-          }
-        });
-        
-        await prisma.transaction.create({
-          data: {
-            walletId,
-            userId,
-            type: 'VOTE',
-            amount: -1,
-            reference: `vote_${vote.id}_${Date.now()}`,
-            status: 'COMPLETED'
-          }
-        });
-        
-        return {
-          success: true,
-          voteId: vote.id,
-          remainingBalance: updatedWallet.balance
-        };
-        
-      } catch (error) {
-        if (error.message === 'CONCURRENT_MODIFICATION' && retries > 1) {
-          retries--;
-          continue;
-        }
-        throw error;
-      }
-    }
-    
-    throw new Error('Vote failed after multiple retries');
+  async castVote({ userId, campaignId, nomineeId }) {
+    // 1. Check for existing vote
+    const existingVote = await Vote.findOne({ userId, campaignId });
+    if (existingVote) throw new Error('ALREADY_VOTED');
+
+    // 2. Atomic Balance Deduction
+    // We use $inc: { walletBalance: -1 } to ensure thread safety without manual retries
+    const user = await User.findOneAndUpdate(
+      { _id: userId, walletBalance: { $gte: 1 } },
+      { $inc: { walletBalance: -1 } },
+      { new: true }
+    );
+
+    if (!user) throw new Error('INSUFFICIENT_BALANCE_OR_USER_NOT_FOUND');
+
+    // 3. Create the Vote document
+    const vote = await Vote.create({ userId, campaignId, nomineeId });
+
+    // 4. Create Transaction log
+    await Transaction.create({
+      userId,
+      type: 'VOTE',
+      amount: -1,
+      reference: `vote_${vote._id}_${Date.now()}`,
+      status: 'COMPLETED'
+    });
+
+    return { success: true, voteId: vote._id, remainingBalance: user.walletBalance };
   }
-  
+
   async getUserVotes(userId, page = 1, limit = 20) {
     const skip = (page - 1) * limit;
-    
-    const votes = await prisma.vote.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take: limit
-    });
-    
+    const votes = await Vote.find({ userId }).sort({ createdAt: -1 }).skip(skip).limit(limit);
     return { votes, page, limit };
   }
-  
+
   async getCampaignVotes(campaignId) {
-    const votes = await prisma.vote.findMany({
-      where: { campaignId },
-      select: { nomineeId: true }
-    });
-    
-    const counts = {};
-    votes.forEach(v => {
-      counts[v.nomineeId] = (counts[v.nomineeId] || 0) + 1;
-    });
-    
-    return Object.entries(counts).map(([nomineeId, voteCount]) => ({
-      nomineeId,
-      voteCount
-    }));
+    // Using Mongoose/MongoDB Aggregation Framework for high performance
+    return await Vote.aggregate([
+      { $match: { campaignId: new mongoose.Types.ObjectId(campaignId) } },
+      { $group: { _id: "$nomineeId", voteCount: { $sum: 1 } } },
+      { $project: { _id: 0, nomineeId: "$_id", voteCount: 1 } }
+    ]);
   }
-  
+
   async hasUserVoted(userId, campaignId) {
-    const vote = await prisma.vote.findFirst({
-      where: {
-        userId: userId,
-        campaignId: campaignId
-      }
-    });
+    const vote = await Vote.findOne({ userId, campaignId });
     return !!vote;
   }
-  
-  async getWalletBalance(walletId) {
-    const wallet = await prisma.wallet.findUnique({
-      where: { id: walletId }
-    });
-    
-    if (!wallet) {
-      throw new Error('Wallet not found');
-    }
-    
-    return {
-      balance: wallet.balance,
-      isLocked: wallet.isLocked
-    };
+
+  async getWalletBalance(userId) {
+    const user = await User.findById(userId).select('walletBalance');
+    if (!user) throw new Error('User not found');
+    return { balance: user.walletBalance };
   }
 }
 

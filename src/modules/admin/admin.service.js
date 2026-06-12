@@ -1,4 +1,4 @@
-import prisma from '../../lib/prisma.js';
+import prisma from '../../config/db.js';
 
 const ALLOWED_TRANSITIONS = {
   DRAFT: ['PUBLISHED'],

@@ -1,58 +1,31 @@
 import jwt from 'jsonwebtoken';
-import prisma from '../lib/prisma.js';
+import User from '../models/User.js';
 
 export const protect = async (req, res, next) => {
+  const token = req.cookies?.token;
+
+  if (!token) {
+    return res.status(401).json({ success: false, error: 'Not authorized' });
+  }
+
   try {
-    let token;
-
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-      token = req.headers.authorization.split(' ')[1];
-    }
-
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        error: 'Not authorized'
-      });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.id }
-    });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+    const user = await User.findById(decoded.id).select('-password');
 
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        error: 'User not found'
-      });
+      return res.status(401).json({ success: false, error: 'User not found' });
     }
 
-    const wallet = await prisma.wallet.findUnique({
-      where: { userId: user.id }
-    });
-
-    req.user = {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      walletId: wallet?.id
-    };
-
+    req.user = user;
     next();
   } catch (error) {
-    res.status(401).json({
-      success: false,
-      error: 'Not authorized'
-    });
+    return res.status(401).json({ success: false, error: 'Not authorized' });
   }
 };
 
 export const authorize = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
+    if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
         error: 'Access denied'
