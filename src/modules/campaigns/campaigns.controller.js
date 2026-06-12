@@ -2,7 +2,17 @@ import * as campaignService from './campaigns.service.js';
 
 export async function createCampaign(req, res, next) {
   try {
-    const campaign = await campaignService.createCampaign(req.body);
+    // Ensure req.user exists from your authentication middleware
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ success: false, message: "User not authenticated" });
+    }
+
+    const campaignData = {
+      ...req.body,
+      creator: req.user.id 
+    };
+    
+    const campaign = await campaignService.createCampaign(campaignData);
     res.status(201).json({ success: true, data: campaign });
   } catch (err) { next(err); }
 }
