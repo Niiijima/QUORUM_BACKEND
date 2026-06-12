@@ -1,4 +1,4 @@
-import Campaign from "../../models/campaign.js";
+import Campaign from "../../models/Campaign.js";
 
 /**
  * Add a category to a campaign
