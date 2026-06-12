@@ -11,7 +11,7 @@ export async function login(req, res, next) {
         res.cookie('token', token, {
             httpOnly: true,                                // Prevents XSS/JS access
             secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-            sameSite: 'strict',                           // Mitigates CSRF
+            sameSite: 'lax',                           // Mitigates CSRF
             maxAge: 3600000                               // 1 hour expiry
         });
 
@@ -30,7 +30,7 @@ export async function logout(req, res) {
     res.clearCookie('token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict'
+        sameSite: 'lax'
     });
     res.status(200).json({ success: true, message: 'Logged out successfully' });
 }
