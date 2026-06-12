@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as controller from './campaigns.controller.js';
+
 import {
   createCampaignSchema,
   updateCampaignSchema,
@@ -7,9 +8,8 @@ import {
   updateStatusSchema,
   createNomineeSchema,
 } from './campaigns.validator.js';
-import validate from '../../middleware/validate.js';
 
-import { protect, authorize } from '../../middleware/auth.js'; 
+import validate from '../../middleware/validate.js';
 
 const router = Router();
 
@@ -19,41 +19,34 @@ router.get('/:id/nominees', controller.listNomineesByCampaign);
 router.get('/:id/categories', controller.listCategories);
 router.get('/:id', controller.getCampaign);
 
-router.use(protect); 
-
-router.get('/', authorize('admin', 'organizer'), controller.listCampaigns);
+router.get('/', controller.listCampaigns);
 
 router.post(
   '/',
-  authorize('admin', 'organizer'),
   validate(createCampaignSchema),
   controller.createCampaign
 );
 
 router.patch(
   '/:id',
-  authorize('admin', 'organizer'),
   validate(updateCampaignSchema),
   controller.updateCampaign
 );
 
 router.patch(
   '/:id/status',
-  authorize('admin', 'organizer'),
   validate(updateStatusSchema),
   controller.changeCampaignStatus
 );
 
 router.post(
   '/:id/categories',
-  authorize('admin', 'organizer'),
   validate(createCategorySchema),
   controller.addCategory
 );
 
 router.post(
   '/categories/:categoryId/nominees',
-  authorize('admin', 'organizer'),
   validate(createNomineeSchema),
   controller.addNominee
 );

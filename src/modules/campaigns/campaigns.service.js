@@ -1,62 +1,98 @@
-import Campaign from "../../models/Campaign.js";
+import Campaign from '../../models/campaign.js';
 
 /**
- * Add a category to a campaign
+ * CREATE
+ */
+export async function createCampaign(data) {
+  return await Campaign.create(data);
+}
+
+/**
+ * GET ALL
+ */
+export async function getAllCampaigns() {
+  return await Campaign.find();
+}
+
+/**
+ * GET ACTIVE
+ */
+export async function getActiveCampaigns() {
+  return await Campaign.find({ status: 'active' });
+}
+
+/**
+ * GET BY ID
+ */
+export async function getCampaignById(id) {
+  return await Campaign.findById(id);
+}
+
+/**
+ * UPDATE
+ */
+export async function updateCampaign(id, data) {
+  return await Campaign.findByIdAndUpdate(id, data, { new: true });
+}
+
+/**
+ * UPDATE STATUS
+ */
+export async function updateCampaignStatus(id, status) {
+  return await Campaign.findByIdAndUpdate(
+    id,
+    { status },
+    { new: true }
+  );
+}
+
+/**
+ * ADD CATEGORY
  */
 export async function addCategory(campaignId, name) {
-  if (!campaignId || !name) {
-    throw new Error("campaignId and name are required");
-  }
-
-  const campaign = await Campaign.findByIdAndUpdate(
+  return await Campaign.findByIdAndUpdate(
     campaignId,
     {
       $push: {
-        categories: {
-          name,
-          nominees: []
-        }
+        categories: { name, nominees: [] }
       }
     },
     { new: true }
   );
-
-  if (!campaign) {
-    throw new Error("Campaign not found");
-  }
-
-  return campaign;
 }
 
+/**
+ * GET CATEGORIES
+ */
+export async function getCategoriesByCampaign(campaignId) {
+  const campaign = await Campaign.findById(campaignId);
+  return campaign?.categories || [];
+}
 
 /**
- * Add a nominee to a category (SAFE version)
+ * ADD NOMINEE (FIXED)
  */
 export async function addNominee(campaignId, categoryName, nomineeData) {
-  if (!campaignId || !categoryName || !nomineeData) {
-    throw new Error("Missing required fields");
-  }
-
-  const campaign = await Campaign.findOneAndUpdate(
+  return await Campaign.findOneAndUpdate(
     {
       _id: campaignId,
       "categories.name": categoryName
     },
     {
       $push: {
-        "categories.$.nominees": {
-          name: nomineeData.name,
-          bio: nomineeData.bio,
-          imageUrl: nomineeData.imageUrl
-        }
+        "categories.$.nominees": nomineeData
       }
     },
     { new: true }
   );
+}
 
-  if (!campaign) {
-    throw new Error("Campaign or category not found");
-  }
+/**
+ * GET NOMINEES (ALL CATEGORIES FLATTENED)
+ */
+export async function getNomineesByCampaign(campaignId) {
+  const campaign = await Campaign.findById(campaignId);
+  if (!campaign) return [];
 
-  return campaign;
+  return campaign.categories.flatMap(c => c.nominees);
 }
