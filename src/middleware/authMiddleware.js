@@ -1,20 +1,29 @@
 import jwt from 'jsonwebtoken';
 
 export const authMiddleware = (req, res, next) => {
+    // Check for token in the Authorization header OR in cookies
     const authHeader = req.headers['authorization'];
+    
+    const token = authHeader?.startsWith('Bearer ') 
+        ? authHeader.split(' ')[1] 
+        : req.cookies?.token; // Looks for the 'token' cookie automatically
 
-    if (!authHeader?.startsWith('Bearer ')) {
+    if (!token) {
         return res.status(401).json({ 
             success: false,
             message: "Access denied. No token provided." 
         });
     }
 
-    const token = authHeader.split(' ')[1];
-
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded; // Contains { userId, role }
+        
+        // Normalize payload: handle both 'id' and 'userId' naming conventions
+        req.user = {
+            id: decoded.id || decoded.userId,
+            role: decoded.role
+        };
+        
         next();
     } catch (error) {
         return res.status(403).json({ 
@@ -37,6 +46,7 @@ export const authorize = (roles = []) => {
         next();
     };
 };
+
 export default { 
     authMiddleware, 
     authorize 

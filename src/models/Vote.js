@@ -28,7 +28,7 @@ const voteSchema = new mongoose.Schema({
   timestamps: true
 });
 
-voteSchema.index({ userId: 1, campaignId: 1 }, { unique: true });
+voteSchema.index({ userId: 1, campaignId: 1 }, { unique: false });
 
 voteSchema.index({ campaignId: 1, createdAt: -1 });
 

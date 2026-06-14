@@ -3,6 +3,7 @@ import * as controller from './campaigns.controller.js';
 
 import {
   createCampaignSchema,
+  deleteCampaignSchema,
   updateCampaignSchema,
   createCategorySchema,
   updateStatusSchema,
@@ -18,6 +19,7 @@ router.get('/active', controller.listActiveCampaigns);
 router.get('/:id/nominees', controller.listNomineesByCampaign);
 router.get('/:id/categories', controller.listCategories);
 router.get('/:id', controller.getCampaign);
+router.delete('/:id', controller.deleteCampaign);
 
 router.get('/', controller.listCampaigns);
 
@@ -45,10 +47,14 @@ router.post(
   controller.addCategory
 );
 
+// Updated route to match your Postman request: /api/campaigns/:id/nominees
 router.post(
-  '/categories/:categoryId/nominees',
-  validate(createNomineeSchema),
-  controller.addNominee
+  '/:id/nominees', 
+  validate(createNomineeSchema), 
+  controller.addNominees 
 );
+
+router.post('/:id/vote', controller.castVote);
+
 
 export default router;

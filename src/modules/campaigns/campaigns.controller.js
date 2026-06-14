@@ -109,26 +109,29 @@ export async function listCategories(req, res, next) {
 }
 
 /**
- * ADD NOMINEE (FIXED EMBEDDED STRUCTURE)
+ * ADD MULTIPLE NOMINEES
  */
-export async function addNominee(req, res, next) {
+export async function addNominees(req, res, next) {
   try {
-    const campaign = await campaignService.addNominee(
-      req.params.id,
-      req.body.categoryName,
-      {
-        name: req.body.name,
-        bio: req.body.bio,
-        imageUrl: req.body.imageUrl
-      }
-    );
+    const { id } = req.params;
+    const { categoryName, nominees } = req.body;
+
+    
+    const campaign = await campaignService.addNominees(id, categoryName, nominees);
+
+    
+    if (!campaign) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Campaign or Category not found" 
+      });
+    }
 
     res.status(201).json({ success: true, data: campaign });
   } catch (err) {
     next(err);
   }
 }
-
 /**
  * LIST NOMINEES
  */
@@ -136,6 +139,38 @@ export async function listNomineesByCampaign(req, res, next) {
   try {
     const nominees = await campaignService.getNomineesByCampaign(req.params.id);
     res.json({ success: true, data: nominees });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * DELETE CAMPAIGN
+ */
+export async function deleteCampaign(req, res, next) {
+  try {
+    await campaignService.deleteCampaign(req.params.id);
+    res.status(200).json({ 
+      success: true, 
+      message: "Campaign deleted successfully" 
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function castVote(req, res, next) {
+  try {
+    const { id } = req.params; // Campaign ID
+    const { categoryName, nomineeId } = req.body;
+
+    const campaign = await campaignService.castVote(id, categoryName, nomineeId);
+
+    if (!campaign) {
+      return res.status(404).json({ success: false, message: "Campaign, Category, or Nominee not found" });
+    }
+
+    res.status(200).json({ success: true, data: campaign });
   } catch (err) {
     next(err);
   }

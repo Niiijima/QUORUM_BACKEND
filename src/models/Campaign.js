@@ -12,7 +12,8 @@ const campaignSchema = new mongoose.Schema({
     nominees: [{
       name: String,
       bio: String,
-      imageUrl: String
+      imageUrl: String,
+      voteCount: { type: Number, default: 0 }
     }]
   }]
 }, { timestamps: true });

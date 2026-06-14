@@ -1,33 +1,36 @@
 import mongoose from 'mongoose';
 import User from '../models/User.js';
-import Transaction from '../models/Transaction.js'; // Assuming you have this model
-import Vote from '../models/Vote.js';             // Assuming you have this model
+import Transaction from '../models/Transaction.js'; 
+import Vote from '../models/Vote.js'; 
 
-export const processVoteTransaction = async (userId, amount, campaignId, nomineeId) => {
+export const processVoteTransaction = async (userId, numberOfVotes, campaignId, nomineeId) => {
+    const VOTE_PRICE = 100;
+    const totalCost = numberOfVotes * VOTE_PRICE;
+
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
-        // 1. Fetch user (the "wallet") and check balance
+        // 1. Fetch user and check balance against totalCost
         const user = await User.findById(userId).session(session);
-        if (!user || user.walletBalance < amount) {
+        if (!user || user.walletBalance < totalCost) {
             throw new Error("Insufficient funds");
         }
 
-        // 2. Deduct balance (Atomic update)
+        // 2. Deduct total cost (Atomic update)
         const updatedUser = await User.findByIdAndUpdate(
             userId,
-            { $inc: { walletBalance: -amount } },
+            { $inc: { walletBalance: -totalCost } },
             { new: true, session }
         );
 
         // 3. Record transaction
         const [txn] = await Transaction.create([{
             userId,
-            amount,
+            amount: totalCost, // Store the total cost spent
             type: "VOTE_CAST",
             reference: `TXN-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-            status: "COMPLETED"
+            status: "SUCCESS"
         }], { session });
 
         // 4. Create the vote

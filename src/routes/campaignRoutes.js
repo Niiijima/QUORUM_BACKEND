@@ -1,19 +1,15 @@
-const express = require('express');
-const router = express.Router();
-const Campaign = require('../models/Campaign');
+import { Router } from 'express';
+import Campaign from '../models/Campaign.js'; // Ensure path is correct
+import { protect } from '../middleware/authMiddleware.js';
+import validate from '../middleware/validate.js';
+import { createNomineeSchema } from './campaigns.validator.js';
+import * as controller from './campaigns.controller.js';
 
-/**
- * @openapi
- * /api/campaigns:
- * get:
- * summary: Get all active campaigns with creator details
- * responses:
- * 200:
- * description: Success
- */
+const router = Router();
+
+// GET all campaigns
 router.get('/', async (req, res) => {
   try {
-    // .populate dynamically fetches the User document linked in the 'creator' field
     const campaigns = await Campaign.find().populate('creator', 'username email');
     res.status(200).json({ status: 'success', data: campaigns });
   } catch (error) {
@@ -21,4 +17,18 @@ router.get('/', async (req, res) => {
   }
 });
 
-module.exports = router;
+// POST a new campaign
+router.post('/', protect, controller.createCampaign);
+
+// DELETE a campaign
+router.delete('/:id', protect, controller.deleteCampaign);
+
+// POST add multiple nominees to a category
+router.post(
+  '/:id/nominees', 
+  protect, 
+  validate(createNomineeSchema), 
+  controller.addNominees
+);
+
+export default router;

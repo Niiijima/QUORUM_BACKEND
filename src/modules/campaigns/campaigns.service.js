@@ -68,19 +68,20 @@ export async function getCategoriesByCampaign(campaignId) {
   const campaign = await Campaign.findById(campaignId);
   return campaign?.categories || [];
 }
-
-/**
- * ADD NOMINEE (FIXED)
+ /**
+ * ADD MULTIPLE NOMINEES
  */
-export async function addNominee(campaignId, categoryName, nomineeData) {
+export async function addNominees(campaignId, categoryName, nomineesArray) {
   return await Campaign.findOneAndUpdate(
     {
       _id: campaignId,
-      "categories.name": categoryName
+      "categories.name": { $regex: new RegExp(`^${categoryName}$`, 'i') } // Case-insensitive match
     },
     {
       $push: {
-        "categories.$.nominees": nomineeData
+        "categories.$.nominees": {
+          $each: nomineesArray
+        }
       }
     },
     { new: true }
@@ -95,4 +96,34 @@ export async function getNomineesByCampaign(campaignId) {
   if (!campaign) return [];
 
   return campaign.categories.flatMap(c => c.nominees);
+}
+
+
+export async function deleteCampaign(id) {
+  const campaign = await Campaign.findByIdAndDelete(id);
+  if (!campaign) {
+    throw new Error('Campaign not found');
+  }
+  return campaign;
+}
+
+export async function castVote(campaignId, categoryName, nomineeId) {
+  return await Campaign.findOneAndUpdate(
+    {
+      _id: campaignId,
+      "categories.name": { $regex: new RegExp(`^${categoryName}$`, 'i') },
+      "categories.nominees._id": nomineeId
+    },
+    {
+      // Use "nom" here to match the arrayFilter identifier
+      $inc: { "categories.$[cat].nominees.$[nom].voteCount": 1 }
+    },
+    {
+      arrayFilters: [
+        { "cat.name": { $regex: new RegExp(`^${categoryName}$`, 'i') } },
+        { "nom._id": nomineeId }
+      ],
+      new: true
+    }
+  );
 }

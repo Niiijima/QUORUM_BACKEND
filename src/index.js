@@ -19,6 +19,7 @@ import adminRoutes from './modules/admin/admin.routes.js';
 import voteRoutes from './routes/votes.js';
 import walletRoutes from './routes/wallet.js';
 
+
 const app = express();
 const PORT = process.env.PORT || 2000;
 
@@ -48,6 +49,7 @@ app.use('/api/campaigns', campaignRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/votes', voteRoutes);
 app.use('/api/wallet', walletRoutes);
+
 
 // 404 Handler
 app.use((req, res) => {
