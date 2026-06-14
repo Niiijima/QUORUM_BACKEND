@@ -10,14 +10,23 @@ class VotingService {
     return { isSuccessful: true }; 
   }
 
-  // NEW: Method to credit wallet balance
+  // UPDATED: More robust credit wallet method
   async creditWallet(userId, amount) {
+    console.log(`[VotingService] Attempting to credit ${amount} to user: ${userId}`);
+    
+    // Cast to ObjectId explicitly to avoid type mismatch issues
     const user = await User.findByIdAndUpdate(
-      userId,
+      new mongoose.Types.ObjectId(userId),
       { $inc: { walletBalance: amount } },
-      { new: true }
+      { new: true, runValidators: true }
     );
-    if (!user) throw new Error('User not found');
+
+    if (!user) {
+      console.error(`[VotingService] ERROR: User not found for ID: ${userId}`);
+      throw new Error('User not found');
+    }
+
+    console.log(`[VotingService] Success. New wallet balance for ${userId}: ${user.walletBalance}`);
     return user.walletBalance;
   }
 
@@ -26,7 +35,7 @@ class VotingService {
     if (existingVote) throw new Error('ALREADY_VOTED');
 
     const user = await User.findOneAndUpdate(
-      { _id: userId, walletBalance: { $gte: 1 } },
+      { _id: new mongoose.Types.ObjectId(userId), walletBalance: { $gte: 1 } },
       { $inc: { walletBalance: -1 } },
       { new: true }
     );
@@ -46,29 +55,11 @@ class VotingService {
     return { success: true, voteId: vote._id, remainingBalance: user.walletBalance };
   }
 
-  async getUserVotes(userId, page = 1, limit = 20) {
-    const skip = (page - 1) * limit;
-    const votes = await Vote.find({ userId }).sort({ createdAt: -1 }).skip(skip).limit(limit);
-    return { votes, page, limit };
-  }
-
-  async getCampaignVotes(campaignId) {
-    return await Vote.aggregate([
-      { $match: { campaignId: new mongoose.Types.ObjectId(campaignId) } },
-      { $group: { _id: "$nomineeId", voteCount: { $sum: 1 } } },
-      { $project: { _id: 0, nomineeId: "$_id", voteCount: 1 } }
-    ]);
-  }
-
-  async hasUserVoted(userId, campaignId) {
-    const vote = await Vote.findOne({ userId, campaignId });
-    return !!vote;
-  }
+  // ... (keep your existing getUserVotes, getCampaignVotes, hasUserVoted as they are)
 
   async getWalletBalance(userId) {
-    const user = await User.findById(userId).select('walletBalance');
+    const user = await User.findById(new mongoose.Types.ObjectId(userId)).select('walletBalance');
     if (!user) throw new Error('User not found');
-    // Returning just the balance number for cleaner controller handling
     return user.walletBalance; 
   }
 }
