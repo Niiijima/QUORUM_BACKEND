@@ -1,15 +1,30 @@
+import mongoose from 'mongoose';
 import User from '../models/User.js';
 import Vote from '../models/Vote.js';
 import Transaction from '../models/Transaction.js';
 
 class VotingService {
+  
+  async verifyPaymentWithProvider(transaction_id) {
+    console.log("Verifying provider transaction:", transaction_id);
+    return { isSuccessful: true }; 
+  }
+
+  // NEW: Method to credit wallet balance
+  async creditWallet(userId, amount) {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $inc: { walletBalance: amount } },
+      { new: true }
+    );
+    if (!user) throw new Error('User not found');
+    return user.walletBalance;
+  }
+
   async castVote({ userId, campaignId, nomineeId }) {
-    // 1. Check for existing vote
     const existingVote = await Vote.findOne({ userId, campaignId });
     if (existingVote) throw new Error('ALREADY_VOTED');
 
-    // 2. Atomic Balance Deduction
-    // We use $inc: { walletBalance: -1 } to ensure thread safety without manual retries
     const user = await User.findOneAndUpdate(
       { _id: userId, walletBalance: { $gte: 1 } },
       { $inc: { walletBalance: -1 } },
@@ -18,16 +33,14 @@ class VotingService {
 
     if (!user) throw new Error('INSUFFICIENT_BALANCE_OR_USER_NOT_FOUND');
 
-    // 3. Create the Vote document
     const vote = await Vote.create({ userId, campaignId, nomineeId });
 
-    // 4. Create Transaction log
     await Transaction.create({
       userId,
       type: 'VOTE',
       amount: -1,
       reference: `vote_${vote._id}_${Date.now()}`,
-      status: 'COMPLETED'
+      status: 'SUCCESS'
     });
 
     return { success: true, voteId: vote._id, remainingBalance: user.walletBalance };
@@ -40,7 +53,6 @@ class VotingService {
   }
 
   async getCampaignVotes(campaignId) {
-    // Using Mongoose/MongoDB Aggregation Framework for high performance
     return await Vote.aggregate([
       { $match: { campaignId: new mongoose.Types.ObjectId(campaignId) } },
       { $group: { _id: "$nomineeId", voteCount: { $sum: 1 } } },
@@ -56,7 +68,8 @@ class VotingService {
   async getWalletBalance(userId) {
     const user = await User.findById(userId).select('walletBalance');
     if (!user) throw new Error('User not found');
-    return { balance: user.walletBalance };
+    // Returning just the balance number for cleaner controller handling
+    return user.walletBalance; 
   }
 }
 

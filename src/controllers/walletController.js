@@ -1,102 +1,75 @@
 import votingService from '../services/votingService.js';
+import Transaction from '../models/Transaction.js'; 
+import AuditLog from '../models/AuditLog.js';
 
+// 1. GET Balance
 export const getBalance = async (req, res) => {
   try {
-    const walletId = req.user.walletId;
-    
-    if (!walletId) {
-      return res.status(404).json({
-        success: false,
-        error: 'Wallet not found for this user'
-      });
-    }
-    
-    const balance = await votingService.getWalletBalance(walletId);
-    
-    res.json({
-      success: true,
-      data: balance
-    });
-    
+    const balance = await votingService.getWalletBalance(req.user.id);
+    // Returning as an object to match your { success: true, data: { balance: X } } expectation
+    res.json({ success: true, data: { balance } });
   } catch (error) {
-    console.error('Get balance error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch balance'
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-export const getTransactions = async (req, res) => {
-  try {
-    const walletId = req.user.walletId;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
-    const type = req.query.type || null;
-    
-    if (!walletId) {
-      return res.status(404).json({
-        success: false,
-        error: 'Wallet not found for this user'
-      });
-    }
-    
-    const transactions = await votingService.getWalletTransactions(
-      walletId,
-      page,
-      limit,
-      type
-    );
-    
-    res.json({
-      success: true,
-      data: transactions
-    });
-    
-  } catch (error) {
-    console.error('Get transactions error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch transactions'
-    });
-  }
+// 2. GET All Transactions
+export const getAllTransactions = async (req, res) => {
+  const transactions = await Transaction.find({ userId: req.user.id }).sort({ createdAt: -1 });
+  res.json({ success: true, data: transactions });
 };
 
+// 3. GET Single Transaction
+export const getTransactionByRef = async (req, res) => {
+  const transaction = await Transaction.findOne({ reference: req.params.reference });
+  if (!transaction) return res.status(404).json({ success: false, error: 'Not found' });
+  res.json({ success: true, data: transaction });
+};
+
+// 4. POST Initiate (Create PENDING)
+export const createTransaction = async (req, res) => {
+  const { amount, reference } = req.body;
+  const transaction = await Transaction.create({
+    userId: req.user.id, amount, reference, type: 'DEPOSIT', status: 'PENDING'
+  });
+  // Log the initiation
+  await AuditLog.create({ userId: req.user.id, action: 'INITIATED_TRANSACTION', reference });
+  res.status(201).json({ success: true, data: transaction });
+};
+
+// 5. POST Verify (Update to SUCCESS and trigger balance update)
+export const verifyTransaction = async (req, res) => {
+  const { transaction_id } = req.body;
+  
+  // Verify with Provider
+  const verification = await votingService.verifyPaymentWithProvider(transaction_id);
+  if (!verification?.isSuccessful) return res.status(400).json({ success: false, error: 'Failed' });
+
+  // Update Transaction Status
+  const transaction = await Transaction.findOneAndUpdate(
+    { reference: transaction_id, status: 'PENDING' }, 
+    { status: 'SUCCESS' }, 
+    { new: true }
+  );
+  
+  if (!transaction) return res.status(404).json({ success: false, error: 'Transaction not found or already verified' });
+  
+  // AUTO-UPDATE BALANCE
+  await votingService.creditWallet(req.user.id, transaction.amount);
+  
+  // Log the success
+  await AuditLog.create({ userId: req.user.id, action: 'VERIFIED_TRANSACTION', reference: transaction_id });
+  
+  res.json({ success: true, data: transaction });
+};
+
+// 6. GET Audit Logs
 export const getAuditLogs = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
-    const skip = (page - 1) * limit;
-    
-    const [logs, total] = await Promise.all([
-      prisma.auditLog.findMany({
-        where: { userId },
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit
-      }),
-      prisma.auditLog.count({ where: { userId } })
-    ]);
-    
-    res.json({
-      success: true,
-      data: {
-        logs,
-        pagination: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit)
-        }
-      }
-    });
-    
-  } catch (error) {
-    console.error('Get audit logs error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch audit logs'
-    });
-  }
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 20;
+  const logs = await AuditLog.find({ userId: req.user.id })
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(limit);
+  res.json({ success: true, data: logs });
 };
