@@ -6,7 +6,6 @@ import AuditLog from '../models/AuditLog.js';
 export const getBalance = async (req, res) => {
   try {
     const balance = await votingService.getWalletBalance(req.user.id);
-    // Returning as an object to match your { success: true, data: { balance: X } } expectation
     res.json({ success: true, data: { balance } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -32,7 +31,6 @@ export const createTransaction = async (req, res) => {
   const transaction = await Transaction.create({
     userId: req.user.id, amount, reference, type: 'DEPOSIT', status: 'PENDING'
   });
-  // Log the initiation
   await AuditLog.create({ userId: req.user.id, action: 'INITIATED_TRANSACTION', reference });
   res.status(201).json({ success: true, data: transaction });
 };
@@ -54,11 +52,12 @@ export const verifyTransaction = async (req, res) => {
   
   if (!transaction) return res.status(404).json({ success: false, error: 'Transaction not found or already verified' });
   
-  // AUTO-UPDATE BALANCE
-  await votingService.creditWallet(req.user.id, transaction.amount);
+  // AUTO-UPDATE BALANCE: Use transaction.userId from the record itself
+  console.log(`[DEBUG] Crediting ${transaction.amount} to user: ${transaction.userId}`);
+  await votingService.creditWallet(transaction.userId, transaction.amount);
   
   // Log the success
-  await AuditLog.create({ userId: req.user.id, action: 'VERIFIED_TRANSACTION', reference: transaction_id });
+  await AuditLog.create({ userId: transaction.userId, action: 'VERIFIED_TRANSACTION', reference: transaction_id });
   
   res.json({ success: true, data: transaction });
 };
